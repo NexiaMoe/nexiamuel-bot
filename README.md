@@ -1,8 +1,10 @@
 # Nexiamuel BOT
 
-My Experimental bot on Discord, Using discord.py
+My Experimental bot on Discord, Using discord.py. This is self hosting script.
 
 It search a doujinshi from nHentai and Illustration Pixiv using scraping method (Requests and BeautifulSoup4) and Pixiv API.
+
+Invite my bot to use without hosting it yourself: [Invite to your channel](http://bit.ly/NexiaProject)
 
 ## To-Do
 
