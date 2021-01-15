@@ -1,6 +1,6 @@
 import json
 import requests
-from auth import *
+from script.auth import *
 
 def get_ilust(code, token):
     url = "https://app-api.pixiv.net/v1/illust/detail?illust_id="+str(code)
@@ -17,7 +17,7 @@ def get_ilust(code, token):
     elif response.status_code == 404:
         data = "Not Found"
     elif response.status_code == 400:
-        with open('option.json') as user_token:
+        with open('option/option.json') as user_token:
             token_data = json.load(user_token)
             tokens = get_token(token_data['username'], token_data['password'])
             

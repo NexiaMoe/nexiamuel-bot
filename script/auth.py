@@ -22,9 +22,8 @@ def get_token(username, password):
     
     response = requests.request("POST", url, headers=headers, data=payload).json()
     data['data'] = {'name': response['response']['user']['account'], 'access_token': response['response']['access_token'], 'refresh_token': response['response']['refresh_token']}
-    print(data)
     
-    with open('user.json', 'w') as f:
+    with open('option/user.json', 'w') as f:
         json.dump(data, f, indent=4)
     
     return json.dumps(data)
