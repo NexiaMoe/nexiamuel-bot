@@ -282,4 +282,6 @@ async def p_get(ctx, *, data):
         await ctx.send(f"""Ilust {ilust['data']['id']}, with title {ilust['data']['title']} by {ilust['data']['user']}""")
         
 # run bot
-client.run("NzkxMzUxMDA3MjU3ODIxMjM0.X-N5Dg.tWgTeQgnxkNaX-4fZDypAZftkf0")
+with open('option.json') as option:
+    bot_token = json.load(option)
+    client.run(bot_token['bot_token'])
