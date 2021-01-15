@@ -33,4 +33,6 @@ It search a doujinshi from nHentai and Illustration Pixiv using scraping method 
 3. And then run app.py
 
     python app.py or screen python app.py
+    
 4. Enjoy
+
