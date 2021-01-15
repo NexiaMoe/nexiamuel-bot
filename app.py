@@ -9,8 +9,8 @@ import re
 import os.path
 
 from requests.sessions import get_auth_from_url
-from auth import *
-from pixiv import *
+from script.auth import *
+from script.pixiv import *
 
 
 client = commands.Bot(command_prefix='.')
@@ -241,8 +241,8 @@ async def p_get(ctx, *, data):
         data = int(''.join(filter(str.isdigit, data))) 
         pass
     
-    if os.path.isfile('user.json'):
-        with open('user.json') as json_file:
+    if os.path.isfile('option/user.json'):
+        with open('option/user.json') as json_file:
             json_data = json.load(json_file)
             ilust = get_ilust(data, json_data['data']['access_token'])
             headers = {
@@ -261,7 +261,7 @@ async def p_get(ctx, *, data):
             await ctx.send(f"""Ilust {ilust['data']['id']}, with title {ilust['data']['title']} by {ilust['data']['user']}""")
             json_file.close()
     else:
-        with open('option.json') as user_token:
+        with open('option/option.json') as user_token:
             token_data = json.load(user_token)
             tokens = get_token(token_data['username'], token_data['password'])
         
@@ -282,6 +282,6 @@ async def p_get(ctx, *, data):
         await ctx.send(f"""Ilust {ilust['data']['id']}, with title {ilust['data']['title']} by {ilust['data']['user']}""")
         
 # run bot
-with open('option.json') as option:
+with open('option/option.json') as option:
     bot_token = json.load(option)
     client.run(bot_token['bot_token'])

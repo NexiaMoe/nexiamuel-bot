@@ -130,6 +130,9 @@ dmypy.json
 .vscode/settings.json
 .vscode
 user.json
+option/user.json
 user1.json
 option1.json
+option/option.json
 coba.py
+main.py
