@@ -6,6 +6,8 @@ It search a doujinshi from nHentai and Illustration Pixiv using scraping method 
 
 Invite my bot to use without hosting it yourself: [Invite to your channel](http://bit.ly/NexiaProject)
 
+Join to my discord server to use development bot: [Join Here](https://discord.gg/WmMPnNZYpG)
+
 ## To-Do
 
 > **nHentai Command**
