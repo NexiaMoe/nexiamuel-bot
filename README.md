@@ -29,7 +29,7 @@ It search a doujinshi from nHentai and Illustration Pixiv using scraping method 
 
     pip install -r requirement.txt
 
-2. Add your Bot Token to option.json. if you have Pixiv account, insert to user.json.
+2. Change option.json.template to option.json and Add your Bot Token to option.json. if you have Pixiv account, insert to user.json.
 3. And then run app.py
 
     python app.py or screen python app.py
