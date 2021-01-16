@@ -18,19 +18,24 @@ client.remove_command("help")
 
 @client.command()
 async def help(ctx):
-    embed = discord.Embed(title="nHentai Bot",description=f"""
-    This bot is useful to get doujinshi information from nHentai. 
+    embed = discord.Embed(title="Nexiamuel NSFW Bot",description=f"""
+    This bot is useful to get doujinshi information from nHentai.
 
-    To get start, just send command `g/code <code>`, and the bot will processed the code and will show you the information.
+    To get start, just send command `g/code <code>`, and the bot will processed the code and will s>
 
     __***Command***__
-    
-    Command that available is :
+
+    **nHentai**
     - `g/code <code>` : Get information of Doujinshi from nHentai
     - `g/ping` : Get status from Bot
     - `g/help` : Open this help
     - `g/view <code>` : View Doujinshi to secret channel
-    - `g/close` : To Close secret channel, must on the right category channel.""" , color=0x00ccff)
+    - `g/close` : To Close secret channel, must on the right category channel.
+    
+    **pixiv**
+    - `g/pixiv <code> / <url>` : Get illustrator from pixiv
+    
+    Will be add more feature!""" , color=0x00ccff)
     await ctx.send(embed=embed)
 
 @client.event
@@ -257,8 +262,18 @@ async def p_get(ctx, *, data):
             
             with BytesIO(req.get(ilust['data']['image'], headers=headers).content) as image_binary:
                 image_binary.seek(0)
-                await ctx.send(file=discord.File(fp=image_binary,filename="image.jpg"))
-            await ctx.send(f"""Ilust {ilust['data']['id']}, with title {ilust['data']['title']} by {ilust['data']['user']}""")
+                thumbnail = discord.File(fp=image_binary,filename="image.jpg")
+            with BytesIO(req.get(ilust['data']['user_img'], headers=headers).content) as image_binary_user:
+                image_binary.seek(0)
+                user_image = discord.File(fp=image_binary_user, filename="user.jpg")
+            embed=discord.Embed(title=ilust['data']['title'], url="https://pixiv.net/artworks/"+str(ilust['data']['id']), description=ilust['data']['caption'], color=0x1e00ff)
+            embed.set_author(name=ilust['data']['user'], url="https://pixiv.net/users/"+str(ilust['data']['user_id']), icon_url="attachment://user.jpg")
+            embed.set_image(url="attachment://image.jpg")
+            embed.add_field(name="ID Illustrator", value=ilust['data']['id'], inline=False)
+            embed.add_field(name="Page Count", value=ilust['data']['page'], inline=True)
+            embed.add_field(name="Type", value=ilust['data']['type'], inline=True)
+            embed.add_field(name="Tags", value=f'\n'.join(str(x) for x in ilust['data']['tag']), inline=False)
+            await ctx.send(files=[thumbnail, user_image], embed=embed)
             json_file.close()
     else:
         with open('option/option.json') as user_token:
@@ -277,9 +292,22 @@ async def p_get(ctx, *, data):
                     'Referer': 'https://pixiv.net'
                 }   
         with BytesIO(req.get(ilust['data']['image'], headers=headers).content) as image_binary:
-                image_binary.seek(0)
-                await ctx.send(file=discord.File(fp=image_binary,filename="image.jpg"))
-        await ctx.send(f"""Ilust {ilust['data']['id']}, with title {ilust['data']['title']} by {ilust['data']['user']}""")
+            image_binary.seek(0)
+            thumbnail = discord.File(fp=image_binary,filename="image.jpg")
+        with BytesIO(req.get(ilust['data']['user_img'], headers=headers).content) as image_binary_user:
+            image_binary.seek(0)
+            user_image = discord.File(fp=image_binary_user, filename="user.jpg")
+        
+        embed=discord.Embed(title=ilust['data']['title'], url="https://pixiv.net/artworks/"+str(ilust['data']['id']), description=ilust['data']['caption'], color=0x1e00ff)
+        embed.set_author(name=ilust['data']['user'], url="https://pixiv.net/users/"+str(ilust['data']['user_id']), icon_url="attachment://user.jpg")
+        embed.set_image(url="attachment://image.jpg")
+        embed.add_field(name="ID Illustrator", value=ilust['data']['id'], inline=False)
+        embed.add_field(name="Page Count", value=ilust['data']['page'], inline=True)
+        embed.add_field(name="Type", value=ilust['data']['type'], inline=True)
+        embed.add_field(name="Tags", value=f'\n'.join(str(x) for x in ilust['data']['tag']), inline=False)
+        
+        await ctx.send(files=[thumbnail, user_image], embed=embed)
+        #await ctx.send(f"""Ilust {ilust['data']['id']}, with title {ilust['data']['title']} by {ilust['data']['user']}""")
         
 # run bot
 with open('option/option.json') as option:
