@@ -1,12 +1,14 @@
 import json
 import requests
 from script.auth import *
+import re
 
 def get_ilust(code, token):
     url = "https://app-api.pixiv.net/v1/illust/detail?illust_id="+str(code)
 
     payload={}
     headers = {
+    'Accept-Language': 'English',
     'Authorization': 'Bearer '+token
     }
     
@@ -29,11 +31,27 @@ def get_ilust(code, token):
         json_data = response.json()
     
     data = {}
+    caption = json_data['illust']['caption'].replace("<br />", "\n")
+    caption = re.sub(r'<(a|/a).*?>' , "", caption)
+    tag = []
+    for tags in json_data['illust']['tags']:
+        #print(tags)
+        #print(tags['name'])
+        if tags['translated_name'] is None:
+            tag.append(tags['name'])
+        else:
+            tag.append(tags['translated_name'])
+    
     data['data'] = {"id": json_data['illust']['id'],
                     "title": json_data['illust']['title'],
                     "user": json_data['illust']['user']['name'],
-                    "image": json_data['illust']['image_urls']['large']}
-    
+                    "user_img": json_data['illust']['user']['profile_image_urls']['medium'],
+                    "user_id": json_data['illust']['user']['id'],
+                    "caption": caption,
+                    "type": json_data['illust']['type'],
+                    "page": json_data['illust']['page_count'],
+                    "tag": tag,
+                    "image": json_data['illust']['meta_single_page']['original_image_url']}
     
     return data
 
