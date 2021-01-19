@@ -124,30 +124,33 @@ async def view(ctx, kode : int):
                 await guild.create_text_channel(kode, category=category, overwrites=overwrites)
                 channel = discord.utils.get(ctx.guild.channels, name=str(kode))
                 
-                url = req.get("https://nhentai.net/g/"+str(kode)+"/1").text
-                raw = bs(url, 'html.parser')
-                link = []
+                async with aiohttp.ClientSession() as session:
+                    async with session.get("https://nhentai.net"+str(kode)+"/1") as r:
+                    #url = req.get("https://nhentai.net/g/"+str(kode)+"/1")
+                        text = r.read()
+                        raw = bs(text, 'html.parser')
+                        link = []
 
-                total_pages = int(raw.find("span", class_="num-pages").text) + 1
-                #print(total_pages)
-                total_pages = int(raw.find("span", class_="num-pages").text) + 1
-                # print(total_pages)
+                        total_pages = int(raw.find("span", class_="num-pages").text) + 1
+                        #print(total_pages)
+                        total_pages = int(raw.find("span", class_="num-pages").text) + 1
+                        # print(total_pages)
 
-                ext=".jpg"
-                media_id = raw.find("section", {"id": "image-container"}).find("img")['src'].replace("https://i.nhentai.net/galleries/","").replace("/1.jpg","")
-                if re.findall(r"png",media_id):
-                    ext = ".png"
-                    media_id = raw.find("section", {"id": "image-container"}).find("img")['src'].replace("https://i.nhentai.net/galleries/","").replace("/1.png","")
+                        ext=".jpg"
+                        media_id = raw.find("section", {"id": "image-container"}).find("img")['src'].replace("https://i.nhentai.net/galleries/","").replace("/1.jpg","")
+                        if re.findall(r"png",media_id):
+                            ext = ".png"
+                            media_id = raw.find("section", {"id": "image-container"}).find("img")['src'].replace("https://i.nhentai.net/galleries/","").replace("/1.png","")
 
-                for a in range(1, total_pages):
-                    link.append("https://i.nhentai.net/galleries/"+str(media_id)+"/"+str(a)+ext)
-                    
-                await channel.send(f"Total Pages : {total_pages}")
-                for kirim in link:
-                    await channel.send(kirim)
-                await channel.send("Done, Enjoy!")
-                await channel.send("Jangan lupa hapus channel dengan command .close!")
-                break
+                        for a in range(1, total_pages):
+                            link.append("https://i.nhentai.net/galleries/"+str(media_id)+"/"+str(a)+ext)
+                            
+                        await channel.send(f"Total Pages : {total_pages}")
+                        for kirim in link:
+                            await channel.send(kirim)
+                        await channel.send("Done, Enjoy!")
+                        await channel.send("Jangan lupa hapus channel dengan command .close!")
+                        break
         
         
     else:
@@ -262,7 +265,7 @@ async def new(ctx):
             
         
         try:
-            reaction, user = await client.wait_for('reaction_add', timeout = 30.0, check = check)
+            reaction, user = await client.wait_for('reaction_add', timeout = 300.0, check = check)
             await message.remove_reaction(reaction, user)
         except:
             break
@@ -275,16 +278,21 @@ async def close(ctx):
     """Close Doujinshi channel
     
     """
-    name = 'Coba'
-    category = discord.utils.get(ctx.guild.categories, name=name)
-    #print(category.id)
-    if ctx.message.channel.category.id is not category.id:
-        await ctx.send("Salah channel Cok!")
-        #print(ctx.message.channel.category.id)
-    else:
-        channel = ctx.message.channel
-        channel = discord.utils.get(ctx.guild.channels, name=str(channel))
-        await channel.delete()
+    with open("option/server.json", 'r') as f:
+        temp = json.load(f)
+    for code in temp:
+        if str(ctx.message.guild.id) == str(code['server_id']):
+            name = 'Coba'
+            category = discord.utils.get(ctx.guild.categories, name=name)
+            #print(category.id)
+            if ctx.message.channel.category.id is not category.id:
+                await ctx.send("Salah channel Cok!")
+                #print(ctx.message.channel.category.id)
+            else:
+                channel = ctx.message.channel
+                channel = discord.utils.get(ctx.guild.channels, name=str(channel))
+                await channel.delete()
+                break
 
 @client.command(pass_context = True)
 async def random(ctx):
