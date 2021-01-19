@@ -282,7 +282,7 @@ async def close(ctx):
         temp = json.load(f)
     for code in temp:
         if str(ctx.message.guild.id) == str(code['server_id']):
-            name = 'Coba'
+            name = code['channel_read_name']
             category = discord.utils.get(ctx.guild.categories, name=name)
             #print(category.id)
             if ctx.message.channel.category.id is not category.id:

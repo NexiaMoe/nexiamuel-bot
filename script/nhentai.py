@@ -264,10 +264,10 @@ def get_code(kode):
     
     cover = raw.find("div", {"id": "cover"}).find("img", class_="lazyload")['data-src']        
     # Send Message
-    
     embed=discord.Embed(title=title_eng, url="https://nhentai.net/g/"+str(kode), description=title_jp, color=0xff0000)
     embed.set_image(url=cover)
     # ', '.join(str(x) for x in parody)
+    embed.add_field(name="ID / Code", value=kode, inline=True)
     if parody:
         embed.add_field(name="Parody", value=', '.join(str(x) for x in parody), inline=True)
     if artist:
