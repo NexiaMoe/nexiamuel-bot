@@ -33,7 +33,7 @@ def get_token(username, password):
     
     
     response = requests.request("POST", url, headers=headers, data=payload).json()
-    print(response)
+    #print(response)
     data['data'] = {'name': response['response']['user']['account'], 'access_token': response['response']['access_token'], 'refresh_token': response['response']['refresh_token']}
     
     with open('option/user.json', 'w') as f:
