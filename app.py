@@ -25,19 +25,23 @@ async def help(ctx):
     embed = discord.Embed(title="Nexiamuel NSFW Bot",description=f"""
     This bot is useful to get doujinshi information from nHentai.
 
-    To get start, just send command `g/code <code>`, and the bot will processed the code and will s>
+    To get start, just send command `code <code>`, and the bot will processed the code and will s>
 
+    Please check the command_prefix, Default is g/
+    
     __***Command***__
 
     **nHentai**
-    - `g/code <code>` : Get information of Doujinshi from nHentai
-    - `g/ping` : Get status from Bot
-    - `g/help` : Open this help
-    - `g/view <code>` : View Doujinshi to secret channel
-    - `g/close` : To Close secret channel, must on the right category channel.
-    
+    - `code <code>` : Get information of Doujinshi from nHentai
+    - `ping` : Get status from Bot
+    - `help` : Open this help
+    - `view <code>` : View Doujinshi to secret channel
+    - `random` : Get random code / Gacha.
+    - `new` : Get latest dujin, updated an hour.
+    - `close` : To Close secret channel, must on the right category channel.
+   
     **pixiv**
-    - `g/pixiv <code> / <url>` : Get illustrator from pixiv
+    - `pixiv <code> / <url>` : Get illustrator from pixiv
     
     Will be add more feature!""" , color=0x00ccff)
     await ctx.send(embed=embed)
