@@ -125,9 +125,9 @@ async def view(ctx, kode : int):
                 channel = discord.utils.get(ctx.guild.channels, name=str(kode))
                 
                 async with aiohttp.ClientSession() as session:
-                    async with session.get("https://nhentai.net"+str(kode)+"/1") as r:
+                    async with session.get("https://nhentai.net/g/"+str(kode)+"/1") as r:
                     #url = req.get("https://nhentai.net/g/"+str(kode)+"/1")
-                        text = r.read()
+                        text = await r.read()
                         raw = bs(text, 'html.parser')
                         link = []
 
@@ -235,9 +235,11 @@ async def new(ctx):
     await message.add_reaction('⏭')
     await message.add_reaction(cross)
     await message.add_reaction(open_book)
+    await message.add_reaction('⭕')
 
     def check(reaction, user):
-        return user == ctx.author
+        
+        return reaction.message.id == reaction.message.id
 
     i = 0
     reaction = None
