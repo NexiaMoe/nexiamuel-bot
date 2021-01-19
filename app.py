@@ -17,7 +17,7 @@ from script.auth import *
 from script.pixiv import *
 from script.nhentai import *
 
-client = commands.Bot(command_prefix='.')
+client = commands.Bot(command_prefix='g/')
 client.remove_command("help")
 
 @client.command()
