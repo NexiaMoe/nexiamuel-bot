@@ -150,7 +150,7 @@ def pages(pages):
     embed=discord.Embed(title=cont['eng'], url="https://nhentai.net/g/"+str(cont['id']), description=cont['jp'], color=0xff0000)
     embed.set_image(url=cont['cover'])
     kode = cont['id']
-    embed.add_field(name="Id / Code", value=', '.join(str(x) for x in cont['kode']), inline=True)# ', '.join(str(x) for x in parody)
+    embed.add_field(name="Id / Code", value=cont['id'], inline=True)# ', '.join(str(x) for x in parody)
     if cont['parody']:
         embed.add_field(name="Parody", value=', '.join(str(x) for x in cont['parody']), inline=True)
     if cont['artist']:
