@@ -158,8 +158,11 @@ async def view(ctx, kode : int):
 @client.command(pass_context = True)
 async def setreadcategory(ctx, *, channel):
     try:
-        with open('option/server.json') as f:
-            temp = json.load(f)
+        try:
+            with open('option/server.json') as f:
+                temp = json.load(f)
+        except :
+            pass
             
         x = 0
         channel_name = discord.utils.get(ctx.guild.categories, name=channel)
