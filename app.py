@@ -104,41 +104,47 @@ async def view(ctx, kode : int):
     
     """
     channel = discord.utils.get(ctx.guild.channels, name=str(kode))
+    with open("option/server.json", 'r') as f:
+        temp = json.load(f)
     if channel is None:
         guild = ctx.guild
-        name = 'Coba'
-        category = discord.utils.get(ctx.guild.categories, name=name)
-        overwrites = {
-            ctx.guild.default_role: discord.PermissionOverwrite(read_messages=False),
-            ctx.guild.me: discord.PermissionOverwrite(read_messages=True, send_messages=True),
-            ctx.author: discord.PermissionOverwrite(read_messages=True, send_messages=True)
-        }
-        await guild.create_text_channel(kode, category=category, overwrites=overwrites)
-        channel = discord.utils.get(ctx.guild.channels, name=str(kode))
+        for code in temp:
+            if str(ctx.message.guild.id) == str(code['server_id']):
+                name = code['channel_read_name']
+                category = discord.utils.get(ctx.guild.categories, name=name)
+                overwrites = {
+                    ctx.guild.default_role: discord.PermissionOverwrite(read_messages=False),
+                    ctx.guild.me: discord.PermissionOverwrite(read_messages=True, send_messages=True),
+                    ctx.author: discord.PermissionOverwrite(read_messages=True, send_messages=True)
+                }
+                await guild.create_text_channel(kode, category=category, overwrites=overwrites)
+                channel = discord.utils.get(ctx.guild.channels, name=str(kode))
+                
+                url = req.get("https://nhentai.net/g/"+str(kode)+"/1").text
+                raw = bs(url, 'html.parser')
+                link = []
+
+                total_pages = int(raw.find("span", class_="num-pages").text) + 1
+                #print(total_pages)
+                total_pages = int(raw.find("span", class_="num-pages").text) + 1
+                # print(total_pages)
+
+                ext=".jpg"
+                media_id = raw.find("section", {"id": "image-container"}).find("img")['src'].replace("https://i.nhentai.net/galleries/","").replace("/1.jpg","")
+                if re.findall(r"png",media_id):
+                    ext = ".png"
+                    media_id = raw.find("section", {"id": "image-container"}).find("img")['src'].replace("https://i.nhentai.net/galleries/","").replace("/1.png","")
+
+                for a in range(1, total_pages):
+                    link.append("https://i.nhentai.net/galleries/"+str(media_id)+"/"+str(a)+ext)
+                    
+                await channel.send(f"Total Pages : {total_pages}")
+                for kirim in link:
+                    await channel.send(kirim)
+                await channel.send("Done, Enjoy!")
+                await channel.send("Jangan lupa hapus channel dengan command .close!")
+                break
         
-        url = req.get("https://nhentai.net/g/"+str(kode)+"/1").text
-        raw = bs(url, 'html.parser')
-        link = []
-
-        total_pages = int(raw.find("span", class_="num-pages").text) + 1
-        #print(total_pages)
-        total_pages = int(raw.find("span", class_="num-pages").text) + 1
-       # print(total_pages)
-
-        ext=".jpg"
-        media_id = raw.find("section", {"id": "image-container"}).find("img")['src'].replace("https://i.nhentai.net/galleries/","").replace("/1.jpg","")
-        if re.findall(r"png",media_id):
-            ext = ".png"
-            media_id = raw.find("section", {"id": "image-container"}).find("img")['src'].replace("https://i.nhentai.net/galleries/","").replace("/1.png","")
-
-        for a in range(1, total_pages):
-            link.append("https://i.nhentai.net/galleries/"+str(media_id)+"/"+str(a)+ext)
-            
-        await channel.send(f"Total Pages : {total_pages}")
-        for kirim in link:
-            await channel.send(kirim)
-        await channel.send("Done, Enjoy!")
-        await channel.send("Jangan lupa hapus channel dengan command .close!")
         
     else:
         # print("sudah ada")
