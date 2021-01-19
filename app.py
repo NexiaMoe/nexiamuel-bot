@@ -162,26 +162,31 @@ async def setreadcategory(ctx, *, channel):
             with open('option/server.json') as f:
                 temp = json.load(f)
         except :
+            temp=[]
             pass
             
         x = 0
         channel_name = discord.utils.get(ctx.guild.categories, name=channel)
         new_data = []
-        for entry in temp:
-            if entry['server_id'] == ctx.message.guild.id:
-                s_id = entry['server_id']
-                s_name = entry['server_name']
-                new_data.append({'server_id': s_id, 'server_name': s_name, 'channel_read_id': channel_name.id, 'channel_read_name': str(channel_name)})
-                x+=1
-                            
-            elif entry['server_id'] != ctx.message.guild.id:
-                x == 0
-                new_data.append(entry)
-                
-            else: 
-                x+=1
-                new_data.append(entry)
-            
+        try:
+            for entry in temp:
+                if entry['server_id'] == ctx.message.guild.id:
+                    s_id = entry['server_id']
+                    s_name = entry['server_name']
+                    new_data.append({'server_id': s_id, 'server_name': s_name, 'channel_read_id': channel_name.id, 'channel_read_name': str(channel_name)})
+                    x+=1
+                                
+                elif entry['server_id'] != ctx.message.guild.id:
+                    x == 0
+                    new_data.append(entry)
+                    
+                else: 
+                    x+=1
+                    new_data.append(entry)
+        except:
+            s_id = ctx.message.guild.id
+            s_name = ctx.message.guild.name
+            new_data.append({'server_id': s_id, 'server_name': s_name, 'channel_read_id': channel_name.id, 'channel_read_name': str(channel_name)})
         with open('option/server.json', "w") as f:
             json.dump(new_data, f, indent=4)  
             
