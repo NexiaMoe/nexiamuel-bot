@@ -1,17 +1,21 @@
 from io import BytesIO
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 from discord.utils import get
 import requests as req
 from bs4 import BeautifulSoup as bs
 from datetime import datetime, timedelta
 import re
 import os.path
+import time
+import threading
+import asyncio
 
-from requests.sessions import get_auth_from_url
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from script.auth import *
 from script.pixiv import *
-
+from script.nhentai import *
 
 client = commands.Bot(command_prefix='.')
 client.remove_command("help")
@@ -42,117 +46,39 @@ async def help(ctx):
 async def on_ready():
     print("bot is ready")
 
+
+    
+    # scheduler = BackgroundScheduler(daemon=True)
+    # scheduler.add_job(threaded, 'interval', hours=1)
+    # scheduler.start()
+    
+    # b = BackgroundScheduler(daemon=True)
+    # b.add_job(threaded, 'interval', seconds=1)
+    # b.start()
+    # time.sleep(2)
+    # b.shutdown()
+
+@tasks.loop(hours=1)
+async def sched_new():
+    await new_upload_code()
+    
+@sched_new.before_loop
+async def before_sched():
+    print("Waiting bot to start..")
+    await client.wait_until_ready()
+
 @client.command()
 async def ping(ctx):
     await ctx.send("Pong")
 
 @client.command(pass_context = True)
-async def code(ctx, *, kode : int):
+async def code(ctx, kode : int):
     """To get information of code from nHentai
     
     """
     # Process
     # print("Processing", kode)
-    r = req.get("https://nhentai.net/g/"+str(kode)).text
-    raw = bs(r, 'html.parser')
-    try:
-        title_eng = raw.find("h1", class_="title").text
-    except AttributeError:
-        title_eng = ""
-    try:
-        title_jp = raw.find("h2", class_="title").text
-    except AttributeError:
-        title_jp = ""
-        
-    tag = []
-    chara = []
-    parody = []
-    artist = []
-    language = []
-    category = []
-    pages = []
-    groups = []
-    
-    try:
-        for p in raw.find_all("span", class_="tags")[0].find_all("span", class_="name"):
-            parody.append(p.text.capitalize())
-    except:
-        parody.append("")
-
-    try:
-        for charachter in raw.find_all("span", class_="tags")[1].find_all("span", class_="name"):
-            chara.append(charachter.text.capitalize())
-    except:
-        chara.append("")
-
-    try:
-        for tag_all in raw.find_all("span", class_="tags")[2].find_all("span", class_="name"):
-            tag.append(tag_all.text.capitalize())
-    except:
-        tag.append("")
-
-    try:
-        for ar in raw.find_all("span", class_="tags")[3].find_all("span", class_="name"):
-            artist.append(ar.text.capitalize())
-    except:
-        artist.append("")
-        
-    try:
-        for gr in raw.find_all("span", class_="tags")[4].find_all("span", class_="name"):
-            groups.append(gr.text.capitalize())
-    except:
-            groups.append("")
-
-    try:
-        for la in raw.find_all("span", class_="tags")[5].find_all("span", class_="name"):
-            language.append(la.text.capitalize())
-    except:
-        language.append("")
-            
-    try:
-        for ca in raw.find_all("span", class_="tags")[6].find_all("span", class_="name"):
-            category.append(ca.text.capitalize())
-    except:
-            category.append("")
-            
-    try:
-        for pg in raw.find_all("span", class_="tags")[7].find_all("span", class_="name"):
-            pages.append(pg.text.capitalize())
-    except:
-        pages.append("")
-        
-    try:     
-        for up in raw.find_all("span", class_="tags")[8]:
-            clock = str(up['datetime']).replace("T", " ").replace("+00:00", "")
-            time = datetime.strptime(clock, '%Y-%m-%d %H:%M:%S.%f')
-    except Exception as e:
-        print(e)
-        time="None"
-    
-    cover = raw.find("div", {"id": "cover"}).find("img", class_="lazyload")['data-src']        
-    # Send Message
-    
-    embed=discord.Embed(title=title_eng, url="https://nhentai.net/g/"+str(kode), description=title_jp, color=0xff0000)
-    embed.set_image(url=cover)
-    # ', '.join(str(x) for x in parody)
-    if parody:
-        embed.add_field(name="Parody", value=', '.join(str(x) for x in parody), inline=True)
-    if artist:
-        embed.add_field(name="Artist", value=', '.join(str(x) for x in artist), inline=True)
-    if groups:
-        embed.add_field(name="Groups", value=', '.join(str(x) for x in groups), inline=True)
-    if chara:
-        embed.add_field(name="Character", value=', '.join(str(x) for x in chara), inline=True)
-    if tag:
-        embed.add_field(name="Tag", value=f'\n'.join(str(x) for x in tag), inline=True)
-    if category:
-        embed.add_field(name="Category", value=', '.join(str(x) for x in category), inline=True)
-    if pages:
-        embed.add_field(name="Pages", value=', '.join(str(x) for x in pages), inline=True)
-    if language:
-        embed.add_field(name="Languages", value=', '.join(str(x) for x in language), inline=True)
-    if timedelta:
-        embed.add_field(name="Uplaoded at", value=time, inline=True)
+    embed = get_code(kode)
     
     await ctx.send("Requested by {}".format(ctx.message.author.mention))
     await ctx.send(embed=embed)
@@ -173,7 +99,7 @@ async def clear(ctx):
     await ctx.channel.purge()
 
 @client.command(pass_context = True)
-async def view(ctx, *, kode : int):
+async def view(ctx, kode : int):
     """Read Doujin from nHentai
     
     """
@@ -218,8 +144,114 @@ async def view(ctx, *, kode : int):
         # print("sudah ada")
         overwrite = discord.PermissionOverwrite(read_messages=True, send_messages=True)
         await channel.set_permissions(ctx.author, overwrite=overwrite)
+
+@client.command(pass_context = True)
+async def setreadcategory(ctx, *, channel):
+    try:
+        with open('option/server.json') as f:
+            temp = json.load(f)
+            
+        x = 0
+        channel_name = discord.utils.get(ctx.guild.categories, name=channel)
+        new_data = []
+        for entry in temp:
+            if entry['server_id'] == ctx.message.guild.id:
+                s_id = entry['server_id']
+                s_name = entry['server_name']
+                new_data.append({'server_id': s_id, 'server_name': s_name, 'channel_read_id': channel_name.id, 'channel_read_name': str(channel_name)})
+                x+=1
+                            
+            elif entry['server_id'] != ctx.message.guild.id:
+                x == 0
+                new_data.append(entry)
+                
+            else: 
+                x+=1
+                new_data.append(entry)
+            
+        with open('option/server.json', "w") as f:
+            json.dump(new_data, f, indent=4)  
+            
+        if x == 0:
+            server = {}
+            server['server_id'] = ctx.message.guild.id
+            server['server_name'] = ctx.message.guild.name
+            server['channel_read_id'] = channel_name.id
+            server['channel_read_name'] = str(channel_name)
+            temp.append(server)
+            with open('option/server.json', "w") as f:
+                json.dump(temp, f, indent=4)
+        await ctx.send(f"Category **{channel}** has been set to read Doujinshi")
+    except AttributeError:
+        await ctx.send("Please check the category name")
+    except Exception:
+        await ctx.send("The are error ask bot owner mistake or open Issues in github!")
+        
+@setreadcategory.error
+async def setreadcategory_error(ctx, error):
+    if isinstance(error, commands.errors.MissingRequiredArgument):
+        await ctx.send("Command missing arguments, need Category name! Please add category to make bot can make channel on category for view nHentai page!")
+        await ctx.send("Use setreadcategory <category name>")
+        
+    else:
+        print(error)
+
+@client.command(pass_context = True)
+async def new(ctx):
+    b_text = await ctx.send("Get new release...")
+    with open("option/nhentai_new.json", 'r', encoding='utf-8') as f:
+        temp = json.load(f)
+    kode = 0
+    await b_text.delete()
     
- 
+    # pages = [page1, page2, page3]
+    cross = "\U0000274C"
+    open_book = "\U0001F4D6"
+    message = await ctx.send(embed = pages(0))
+    await message.add_reaction('⏮')
+    await message.add_reaction('◀')
+    await message.add_reaction('▶')
+    await message.add_reaction('⏭')
+    await message.add_reaction(cross)
+    await message.add_reaction(open_book)
+
+    def check(reaction, user):
+        return user == ctx.author
+
+    i = 0
+    reaction = None
+
+    while True:
+        if str(reaction) == '⏮':
+            i = 0
+            await message.edit(embed = pages(i))
+        elif str(reaction) == '◀':
+            if i > 0:
+                i -= 1
+                await message.edit(embed = pages(i))
+        elif str(reaction) == '▶':
+            if i < len(temp)-1:
+                i += 1
+                await message.edit(embed = pages(i))
+        elif str(reaction) == '⏭':
+            i = len(temp)-1
+            await message.edit(embed = pages(i))
+        elif str(reaction) == cross:
+            await message.delete()
+        elif str(reaction) == open_book:
+            await view(ctx, temp[i]['id'])
+            await message.edit(content="Opened.")
+            
+        
+        try:
+            reaction, user = await client.wait_for('reaction_add', timeout = 30.0, check = check)
+            await message.remove_reaction(reaction, user)
+        except:
+            break
+
+    await message.clear_reactions()
+    await message.delete()
+
 @client.command(pass_context = True) 
 async def close(ctx):
     """Close Doujinshi channel
@@ -236,8 +268,18 @@ async def close(ctx):
         channel = discord.utils.get(ctx.guild.channels, name=str(channel))
         await channel.delete()
 
+@client.command(pass_context = True)
+async def random(ctx):
+    randomize = random_id()
+    embed = get_code(randomize)
+    await ctx.send("Hey {}, You get this:".format(ctx.message.author.mention))
+    await ctx.send(embed=embed)
+    
+
+# Pixiv Command :
+
 @client.command(pass_context = True) 
-async def p_get(ctx, *, data):
+async def pixiv(ctx, *, data):
     await ctx.send("Processing, Please wait...")
     try:
         int(data)
@@ -310,6 +352,7 @@ async def p_get(ctx, *, data):
         #await ctx.send(f"""Ilust {ilust['data']['id']}, with title {ilust['data']['title']} by {ilust['data']['user']}""")
         
 # run bot
+sched_new.start()
 with open('option/option.json') as option:
     bot_token = json.load(option)
     client.run(bot_token['bot_token'])
