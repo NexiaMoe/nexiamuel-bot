@@ -17,7 +17,8 @@ from script.auth import *
 from script.pixiv import *
 from script.nhentai import *
 
-client = commands.Bot(command_prefix='g/')
+prefix = '.'
+client = commands.Bot(command_prefix=prefix)
 client.remove_command("help")
 
 @client.command()
@@ -61,6 +62,19 @@ async def on_ready():
     # b.start()
     # time.sleep(2)
     # b.shutdown()
+
+@client.event
+async def on_message(ctx):
+    # print(ctx.content)
+    try:
+        if ctx.content.startswith(prefix + str(int(''.join(filter(str.isdigit, ctx.content))))):
+            embed = get_code(int(''.join(filter(str.isdigit, ctx.content))))
+
+            await ctx.channel.send("Requested by {}".format(ctx.author.mention))
+            await ctx.channel.send(embed=embed)
+    except:
+        await client.process_commands(ctx)
+        pass
 
 @tasks.loop(hours=1)
 async def sched_new():

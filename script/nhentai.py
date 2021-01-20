@@ -13,6 +13,9 @@ async def new_upload_code():
     async with aiohttp.ClientSession() as session:
         async with session.get("https://nhentai.net") as r:
         # r = req.get("https://nhentai.net").text
+            if r.status == 429:
+                print("Error")
+                return
             text = await r.read()
             raw = bs(text, 'html.parser')
 
@@ -34,6 +37,7 @@ async def new_upload(code):
     data = []
     x = 1
     for i in code:
+        print(i)
         # print(i)
         try:
             if temp[0]['id'] == i:
@@ -120,10 +124,12 @@ async def new_upload(code):
                         clock = str(up['datetime']).replace("T", " ").replace("+00:00", "")
                         time = datetime.strptime(clock, '%Y-%m-%d %H:%M:%S.%f')
                 except Exception as e:
-                    print(e)
+                    # print(e)
                     time="None"
-                
-                cover = raw.find("div", {"id": "cover"}).find("img", class_="lazyload")['data-src']        
+                try:
+                    cover = raw.find("div", {"id": "cover"}).find("img", class_="lazyload")['data-src'] 
+                except:
+                    cover = ""       
                 # Send Message
                 data.append({'id': i, 'eng': title_eng, 'jp': title_jp, 'cover': cover, 'page': pages[0], 'tags': tag, 'chara': chara, 'parody': parody, 'artist': artist, 'languages': language, 'category': category, 'groups': groups, 'uploaded': str(time)})
                 
@@ -186,8 +192,12 @@ def random_id():
     return randomize
 
 def get_code(kode):
-    r = req.get("https://nhentai.net/g/"+str(kode)).text
-    raw = bs(r, 'html.parser')
+    r = req.get("https://nhentai.net/g/"+str(kode))
+    if r.status_code == 429:
+        # embed=discord.Embed(title="nHentai server is busy, Please try again!", color=0xff0000)
+        return get_code(kode)
+    
+    raw = bs(r.text, 'html.parser')
     try:
         title_eng = raw.find("h1", class_="title").text
     except AttributeError:
@@ -259,10 +269,13 @@ def get_code(kode):
             clock = str(up['datetime']).replace("T", " ").replace("+00:00", "")
             time = datetime.strptime(clock, '%Y-%m-%d %H:%M:%S.%f')
     except Exception as e:
-        print(e)
+        # print(e)
         time="None"
     
-    cover = raw.find("div", {"id": "cover"}).find("img", class_="lazyload")['data-src']        
+    try:
+        cover = raw.find("div", {"id": "cover"}).find("img", class_="lazyload")['data-src'] 
+    except:
+        cover = ""       
     # Send Message
     embed=discord.Embed(title=title_eng, url="https://nhentai.net/g/"+str(kode), description=title_jp, color=0xff0000)
     embed.set_image(url=cover)
