@@ -109,10 +109,8 @@ async def on_ready():
 
 @client.event
 async def on_message(ctx):
-    try:
-        c = cursor.execute("SELECT prefix FROM "+db_name+" WHERE id == ?", (int(ctx.guild.id),))
-        pre  = ''.join(c.fetchone())
-    except:
+    c = cursor.execute("SELECT prefix FROM "+db_name+" WHERE id == ?", (int(ctx.guild.id),))
+    pre  = ''.join(c.fetchone())
     try:
         a = ctx.content
         num = int(a.replace(".",""))
