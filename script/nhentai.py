@@ -306,8 +306,8 @@ def get_code(kode):
     return embed
 
 def tag_search(tag, first, second):
-    all_data = f"SELECT * FROM nhentai WHERE tags LIKE '%{tag}%'"
-    query = f"SELECT * FROM nhentai WHERE tags LIKE '%{tag}%' ORDER BY id DESC LIMIT {first}, {second}"
+    all_data = f"SELECT * FROM nhentai WHERE(tags || languages) LIKE '%{tag}%'"
+    query = f"SELECT * FROM nhentai WHERE(tags || languages) LIKE '%{tag}%' ORDER BY id DESC LIMIT {first}, {second}"
     total = len(cursor.execute(all_data).fetchall())
     c = cursor.execute(query)
     r = c.fetchall()

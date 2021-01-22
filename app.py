@@ -82,7 +82,7 @@ async def on_command_error(ctx, error):
         await ctx.send('**Please pass in all requirements.**')
     if isinstance(error, commands.MissingPermissions):
         await ctx.send("**You dont have all the requirements or permissions for using this command :angry:**")
-
+    raise error
 @client.command()
 async def help(ctx):
     embed = discord.Embed(title="Nexiamuel NSFW Bot",description=f"""
@@ -391,18 +391,31 @@ async def random(ctx):
     await ctx.send(embed=embed)
     
 @client.command(pass_context = True)
-async def tag(ctx, tags):
+async def tag(ctx, *, tags):
     await ctx.message.delete()
     start = 0
     end = 25
-    total, temp = tag_search(tags, start, end)
+    if ", " in tags:
+        keyword = str(tags).replace(", ", "%%")
+    if " " in tags:
+        keyword = str(tags).replace(" ", "%%")
+    else:
+        keyword = str(tags)
+    
+        total, temp = tag_search(keyword, start, end)
+    
     page_tag = 1
     # print(temp)
     
     
     cross = "\U0000274C"
     open_book = "\U0001F4D6"
-    message = await ctx.send(embed = embed_tag(temp, 0, page_tag, total))
+    try:
+        message = await ctx.send(embed = embed_tag(temp, 0, page_tag, total))
+    except:
+        message = await ctx.send("Data not found, check tag again!")
+        return
+        
     await message.add_reaction('⏮')
     await message.add_reaction('◀')
     await message.add_reaction('▶')
