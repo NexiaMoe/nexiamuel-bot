@@ -109,8 +109,13 @@ async def on_ready():
 
 @client.event
 async def on_message(ctx):
-    c = cursor.execute("SELECT prefix FROM "+db_name+" WHERE id == ?", (int(ctx.guild.id),))
-    pre  = ''.join(c.fetchone())
+    try:
+        c = cursor.execute("SELECT prefix FROM "+db_name+" WHERE id == ?", (int(ctx.guild.id),))
+        pre  = ''.join(c.fetchone())
+    except:
+        cursor.execute("INSERT OR IGNORE INTO "+db_name+" (id, server_name, category_id, category_name, prefix) VALUES(?, ?, ?, ?, ?)", (int(message.guild.id), str(message.guild), int("0"), str(""), str("g/"),))
+        db.commit()
+        
     try:
         a = ctx.content
         num = int(a.replace(".",""))
