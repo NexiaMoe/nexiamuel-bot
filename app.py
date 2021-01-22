@@ -31,6 +31,7 @@ def get_prefix(client, message):
     data = c.fetchone()
     if data is None:
         cursor.execute("INSERT OR IGNORE INTO "+db_name+" (id, server_name, category_id, category_name, prefix) VALUES(?, ?, ?, ?, ?)", (int(message.guild.id), str(message.guild), int("0"), str(""), str("g/"),))
+        db.commit()
         return "g/"
     else:
         c = cursor.execute("SELECT prefix FROM "+db_name+" WHERE id == ?", (int(message.guild.id),))
@@ -108,8 +109,10 @@ async def on_ready():
 
 @client.event
 async def on_message(ctx):
-    c = cursor.execute("SELECT prefix FROM "+db_name+" WHERE id == ?", (int(ctx.guild.id),))
-    pre  = ''.join(c.fetchone())
+    try:
+        c = cursor.execute("SELECT prefix FROM "+db_name+" WHERE id == ?", (int(ctx.guild.id),))
+        pre  = ''.join(c.fetchone())
+    except:
     try:
         a = ctx.content
         num = int(a.replace(".",""))
