@@ -30,6 +30,7 @@ def get_prefix(client, message):
     c = cursor.execute("SELECT prefix FROM "+db_name+" WHERE id == ?", (int(message.guild.id),))
     data = c.fetchone()
     if data is None:
+        cursor.execute("INSERT OR IGNORE INTO "+db_name+" (id, server_name, category_id, category_name, prefix) VALUES(?, ?, ?, ?, ?)", (int(message.guild.id), str(message.guild), int("0"), str(""), str("g/"),))
         return "g/"
     else:
         c = cursor.execute("SELECT prefix FROM "+db_name+" WHERE id == ?", (int(message.guild.id),))
