@@ -1,5 +1,6 @@
 from io import BytesIO
 import discord
+from discord import message
 from discord.ext import commands, tasks
 from discord.utils import get
 import requests as req
@@ -24,15 +25,23 @@ cursor = db.cursor()
 db_name = "settings"
 cursor.execute("CREATE TABLE IF NOT EXISTS "+db_name+" (id INTEGER NOT NULL,server_name	TEXT,category_id	INTEGER,category_name	TEXT,prefix TEXT, PRIMARY KEY(id))")
 
+def preffix(message):
+    c = cursor.execute("SELECT prefix FROM "+db_name+" WHERE id == ?", (int(message.guild.id),))
+    # data = c.fetchone()
+    prefix = ''.join(c.fetchone())
+    # print(prefix)
+    # print(prefix)
+    return prefix
 
 def get_prefix(client, message):
     global prefix
     c = cursor.execute("SELECT prefix FROM "+db_name+" WHERE id == ?", (int(message.guild.id),))
     data = c.fetchone()
     if data is None:
-        cursor.execute("INSERT OR IGNORE INTO "+db_name+" (id, server_name, category_id, category_name, prefix) VALUES(?, ?, ?, ?, ?)", (int(message.guild.id), str(message.guild), int("0"), str(""), str("g/"),))
+        cursor.execute("INSERT INTO "+db_name+" (id, server_name, category_id, category_name, prefix) VALUES(?, ?, ?, ?, ?)", (int(message.guild.id), str(message.guild), int("0"), str(""), str("g/"),))
         db.commit()
-        return "g/"
+        prefix = "g/"
+        return prefix
     else:
         c = cursor.execute("SELECT prefix FROM "+db_name+" WHERE id == ?", (int(message.guild.id),))
         prefix = ''.join(c.fetchone())
@@ -65,13 +74,14 @@ async def changeprefix(ctx, prefix):
         await ctx.send(f"Prefix has been set to {prefix}")
 # prefix = ""
 
-@client.event 
+@client.event
 async def on_command_error(ctx, error):
-    # global prefix
     if isinstance(error, commands.CommandNotFound):
-        await ctx.send(f"Command not found, please use {prefix}help command to get list of command!")
-        return
-    raise error
+        await ctx.send("**Invalid command. Try using** `help` **to figure out commands!**")
+    if isinstance(error, commands.MissingRequiredArgument):
+        await ctx.send('**Please pass in all requirements.**')
+    if isinstance(error, commands.MissingPermissions):
+        await ctx.send("**You dont have all the requirements or permissions for using this command :angry:**")
 
 @client.command()
 async def help(ctx):
@@ -112,33 +122,17 @@ async def on_message(ctx):
     try:
         c = cursor.execute("SELECT prefix FROM "+db_name+" WHERE id == ?", (int(ctx.guild.id),))
         pre  = ''.join(c.fetchone())
-    except:
-        cursor.execute("INSERT OR IGNORE INTO "+db_name+" (id, server_name, category_id, category_name, prefix) VALUES(?, ?, ?, ?, ?)", (int(ctx.guild.id), str(ctx.guild), int("0"), str(""), str("g/"),))
-        db.commit()
-        
-    try:
         a = ctx.content
-        num = int(a.replace(".",""))
-    except:
-        num = ctx.content
-        await client.process_commands(ctx)
-        pass
-    try:
-        
+        num = int(a.replace(pre,""))
         if ctx.content.startswith(pre + str(num)):
-            print(ctx.content)
+            # print(ctx.content)
             embed = get_code(int(''.join(filter(str.isdigit, ctx.content))))
-
             await ctx.channel.send("Requested by {}".format(ctx.author.mention))
             await ctx.channel.send(embed=embed)
-        
-            
     except Exception as e:
-        print(e)
+        # print(e)
         await client.process_commands(ctx)
-        
-        pass  
-    # await client.process_commands(ctx)
+        pass
     
 @tasks.loop(hours=1)
 async def sched_new():
@@ -189,11 +183,14 @@ async def view(ctx, kode : int):
     print(kode)
     channel = discord.utils.get(ctx.guild.channels, name=str(kode))
     c = cursor.execute("SELECT * FROM "+db_name+" WHERE id == ?", (int(ctx.message.guild.id),))
-    try:
+    try: 
         for data in c.fetchall():
-            category_id = data[2]
-            server_id = data[0]
-            category_name = data[3]
+            if data[2] == 0:
+                raise ValueError
+            else:
+                category_id = data[2]
+                server_id = data[0]
+                category_name = data[3]
     except:
         await ctx.send(f"Please configure category name to read with {prefix}!")
     if channel is None:
