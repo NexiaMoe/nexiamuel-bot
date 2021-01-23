@@ -186,10 +186,10 @@ def embed_new(data, i):
         return embed
 
 def random_id():
-    with open("option/nhentai_new.json", "r", encoding='utf-8') as f:
-       temp =  json.load(f)
+    query = "SELECT id FROM nhentai ORDER BY id DESC LIMIT 1"
+    r = cursor.execute(query).fetchone()
     
-    latest = temp[0]['id']
+    latest = r['id']
     randomize = random.randrange(1, latest)
     # print(randomize)
     return randomize

@@ -193,47 +193,47 @@ async def view(ctx, kode : int):
                 category_name = data[3]
             if channel is None:
                 guild = ctx.guild
-            if str(ctx.message.guild.id) == str(server_id):
-                name = category_name
-                category = discord.utils.get(ctx.guild.categories, name=name)
-                overwrites = {
-                    ctx.guild.default_role: discord.PermissionOverwrite(read_messages=False),
-                    ctx.guild.me: discord.PermissionOverwrite(read_messages=True, send_messages=True),
-                    ctx.author: discord.PermissionOverwrite(read_messages=True, send_messages=True)
-                }
-                await guild.create_text_channel(kode, category=category, overwrites=overwrites)
-                channel = discord.utils.get(ctx.guild.channels, name=str(kode))
-                
-                async with aiohttp.ClientSession() as session:
-                    async with session.get("https://nhentai.net/g/"+str(kode)+"/1") as r:
-                    #url = req.get("https://nhentai.net/g/"+str(kode)+"/1")
-                        text = await r.read()
-                        raw = bs(text, 'html.parser')
-                        link = []
+                if str(ctx.message.guild.id) == str(server_id):
+                    name = category_name
+                    category = discord.utils.get(ctx.guild.categories, name=name)
+                    overwrites = {
+                        ctx.guild.default_role: discord.PermissionOverwrite(read_messages=False),
+                        ctx.guild.me: discord.PermissionOverwrite(read_messages=True, send_messages=True),
+                        ctx.author: discord.PermissionOverwrite(read_messages=True, send_messages=True)
+                    }
+                    await guild.create_text_channel(kode, category=category, overwrites=overwrites)
+                    channel = discord.utils.get(ctx.guild.channels, name=str(kode))
+                    
+                    async with aiohttp.ClientSession() as session:
+                        async with session.get("https://nhentai.net/g/"+str(kode)+"/1") as r:
+                        #url = req.get("https://nhentai.net/g/"+str(kode)+"/1")
+                            text = await r.read()
+                            raw = bs(text, 'html.parser')
+                            link = []
 
-                        total_pages = int(raw.find("span", class_="num-pages").text) + 1
-                        #print(total_pages)
-                        total_pages = int(raw.find("span", class_="num-pages").text) + 1
-                        # print(total_pages)
+                            total_pages = int(raw.find("span", class_="num-pages").text) + 1
+                            #print(total_pages)
+                            total_pages = int(raw.find("span", class_="num-pages").text) + 1
+                            # print(total_pages)
 
-                        ext=".jpg"
-                        media_id = raw.find("section", {"id": "image-container"}).find("img")['src'].replace("https://i.nhentai.net/galleries/","").replace("/1.jpg","")
-                        if re.findall(r"png",media_id):
-                            ext = ".png"
-                            media_id = raw.find("section", {"id": "image-container"}).find("img")['src'].replace("https://i.nhentai.net/galleries/","").replace("/1.png","")
+                            ext=".jpg"
+                            media_id = raw.find("section", {"id": "image-container"}).find("img")['src'].replace("https://i.nhentai.net/galleries/","").replace("/1.jpg","")
+                            if re.findall(r"png",media_id):
+                                ext = ".png"
+                                media_id = raw.find("section", {"id": "image-container"}).find("img")['src'].replace("https://i.nhentai.net/galleries/","").replace("/1.png","")
 
-                        for a in range(1, total_pages):
-                            link.append("https://i.nhentai.net/galleries/"+str(media_id)+"/"+str(a)+ext)
-                            
-                        await channel.send(f"Total Pages : {total_pages}")
-                        for kirim in link:
-                            await channel.send(kirim)
-                        await channel.send("Done, Enjoy!")
-                        await channel.send("Jangan lupa hapus channel dengan command .close!")
-            else:
-                # print("sudah ada")
-                overwrite = discord.PermissionOverwrite(read_messages=True, send_messages=True)
-                await channel.set_permissions(ctx.author, overwrite=overwrite)
+                            for a in range(1, total_pages):
+                                link.append("https://i.nhentai.net/galleries/"+str(media_id)+"/"+str(a)+ext)
+                                
+                            await channel.send(f"Total Pages : {total_pages}")
+                            for kirim in link:
+                                await channel.send(kirim)
+                            await channel.send("Done, Enjoy!")
+                            await channel.send("Jangan lupa hapus channel dengan command .close!")
+                else:
+                    # print("sudah ada")
+                    overwrite = discord.PermissionOverwrite(read_messages=True, send_messages=True)
+                    await channel.set_permissions(ctx.author, overwrite=overwrite)
     except:
         await ctx.send(f"Please configure category name to read with {prefix}!")
     
