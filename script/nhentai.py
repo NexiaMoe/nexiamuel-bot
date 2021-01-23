@@ -201,6 +201,9 @@ def get_code(kode):
         return get_code(kode)
     
     raw = bs(r.text, 'html.parser')
+    if r.status_code == 404:
+        embed=discord.Embed(title="Code not found!", description="Check code again, or use different code", color=0xff0000)
+        return embed
     try:
         title_eng = raw.find("h1", class_="title").text
     except AttributeError:

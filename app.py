@@ -155,10 +155,13 @@ async def code(ctx, kode : int):
     """
     # Process
     # print("Processing", kode)
-    embed = get_code(kode)
-    
-    await ctx.send("Requested by {}".format(ctx.message.author.mention))
-    await ctx.send(embed=embed)
+    try:
+        embed = get_code(kode)
+        
+        await ctx.send("Requested by {}".format(ctx.message.author.mention))
+        await ctx.send(embed=embed)
+    except:
+        await ctx.send("Code not found on database, please check again!")
     
     # This is currently not work, so leave this...
     # await ctx.send("Use **g/read 'insert code here'** to Read, or **g/download 'insert code here'** for download as zip")
