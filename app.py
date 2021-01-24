@@ -27,10 +27,7 @@ cursor.execute("CREATE TABLE IF NOT EXISTS "+db_name+" (id INTEGER NOT NULL,serv
 
 def preffix(message):
     c = cursor.execute("SELECT prefix FROM "+db_name+" WHERE id == ?", (int(message.guild.id),))
-    # data = c.fetchone()
     prefix = ''.join(c.fetchone())
-    # print(prefix)
-    # print(prefix)
     return prefix
 
 def get_prefix(client, message):
@@ -45,8 +42,6 @@ def get_prefix(client, message):
     else:
         c = cursor.execute("SELECT prefix FROM "+db_name+" WHERE id == ?", (int(message.guild.id),))
         prefix = ''.join(c.fetchone())
-    # print(prefix)
-    # print(prefix)
         return prefix
 
 client = commands.Bot(command_prefix=get_prefix)
@@ -86,7 +81,7 @@ async def setprefix(ctx, prefix):
         cursor.execute(query)
         db.commit()
         await ctx.send(f"Prefix has been set to {prefix}")
-
+    
 @client.event
 async def on_command_error(ctx, error):
     if isinstance(error, commands.CommandNotFound):
@@ -124,7 +119,7 @@ async def help(ctx):
     
     **Bot Settings**
     - `changeprefix <prefix> or setprefix <prefix>` : Change bot prefix on this server
-    - `prefix` : Get prefix on this server
+    - mention the bot to Get prefix on this server
     - `setreadcategory <category>` : Set category channel to read
     Will add more feature on the future! If there are any problem, please open issues on my github!""" , color=0x00ccff)
     await ctx.send(embed=embed)
@@ -136,18 +131,27 @@ async def on_ready():
 @client.event
 async def on_message(ctx):
     try:
+        
         c = cursor.execute("SELECT prefix FROM "+db_name+" WHERE id == ?", (int(ctx.guild.id),))
         pre  = ''.join(c.fetchone())
         a = ctx.content
         num = int(a.replace(pre,""))
+        
         if ctx.content.startswith(pre + str(num)):
             # print(ctx.content)
             embed = get_code(int(''.join(filter(str.isdigit, ctx.content))))
             await ctx.channel.send("Requested by {}".format(ctx.author.mention))
             await ctx.channel.send(embed=embed)
+        
     except Exception as e:
         # print(e)
-        await client.process_commands(ctx)
+        
+        if client.user.mentioned_in(ctx):
+            c = cursor.execute("SELECT prefix FROM "+db_name+" WHERE id == ?", (int(ctx.guild.id),))
+            pre  = ''.join(c.fetchone())
+            await ctx.channel.send(f"My prefix is {pre}")
+        else:
+            await client.process_commands(ctx)
         pass
     
 @tasks.loop(hours=1)
