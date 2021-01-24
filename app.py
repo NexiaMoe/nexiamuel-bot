@@ -48,11 +48,13 @@ client = commands.Bot(command_prefix=get_prefix)
 
 client.remove_command("help")
 @client.event
+@commands.is_nsfw()
 async def on_guild_join(guild):
     cursor.execute("INSERT INTO "+db_name+" (id, server_name, category_id, category_name, prefix) VALUES(?, ?, ?, ?, ?)", (int(guild.id), str(guild), int("0"), str(""), str("g/"),))
     db.commit()
 
 @client.command()
+@commands.is_nsfw()
 @commands.has_permissions(administrator = True)
 async def changeprefix(ctx, prefix):
     c = cursor.execute("SELECT prefix FROM "+db_name+" WHERE id == ?", (int(ctx.guild.id),))
@@ -68,6 +70,7 @@ async def changeprefix(ctx, prefix):
         await ctx.send(f"Prefix has been set to {prefix}")
 
 @client.command()
+@commands.is_nsfw()
 @commands.has_permissions(administrator = True)
 async def setprefix(ctx, prefix):
     c = cursor.execute("SELECT prefix FROM "+db_name+" WHERE id == ?", (int(ctx.guild.id),))
@@ -83,6 +86,7 @@ async def setprefix(ctx, prefix):
         await ctx.send(f"Prefix has been set to {prefix}")
     
 @client.event
+@commands.is_nsfw()
 async def on_command_error(ctx, error):
     if isinstance(error, commands.CommandNotFound):
         await ctx.send("**Invalid command. Try using** `help` **to figure out commands!**")
@@ -93,6 +97,7 @@ async def on_command_error(ctx, error):
     raise error
 
 @client.command()
+@commands.is_nsfw()
 async def help(ctx):
     embed = discord.Embed(title="Nexiamuel Bot",description=f"""
     This bot is to get doujinshi information from nHentai.
@@ -125,10 +130,12 @@ async def help(ctx):
     await ctx.send(embed=embed)
 
 @client.event
+@commands.is_nsfw()
 async def on_ready():
     print("bot is ready")
 
 @client.event
+@commands.is_nsfw()
 async def on_message(ctx):
     try:
         
@@ -165,10 +172,12 @@ async def before_sched():
     await client.wait_until_ready()
 
 @client.command()
+@commands.is_nsfw()
 async def ping(ctx):
     await ctx.send("Pong")
 
 @client.command(pass_context = True)
+@commands.is_nsfw()
 async def code(ctx, kode : int):
     """To get information of code from nHentai
     
@@ -188,6 +197,7 @@ async def code(ctx, kode : int):
     # print("Done")
 
 @code.error
+@commands.is_nsfw()
 async def code_error(ctx, error):
     if isinstance(error, commands.BadArgument):
         await ctx.send("Wrong code, please use integer only or Check if the code is correct!")
@@ -195,10 +205,12 @@ async def code_error(ctx, error):
         print(error)
 
 @client.command()
+@commands.is_nsfw()
 async def clear(ctx):
     await ctx.channel.purge()
 
 @client.command(pass_context = True)
+@commands.is_nsfw()
 async def view(ctx, kode : int):
     """Read Doujin from nHentai
     
@@ -262,6 +274,7 @@ async def view(ctx, kode : int):
     
 @client.command(pass_context = True)
 @commands.has_permissions(administrator = True)
+@commands.is_nsfw()
 async def setreadcategory(ctx, *, channel):
     channel_name = discord.utils.get(ctx.guild.categories, name=channel)
     query = f"UPDATE {db_name} set category_id = {channel_name.id}, category_name = '{channel_name}' WHERE id = {ctx.message.guild.id}"
@@ -317,6 +330,7 @@ async def setreadcategory(ctx, *, channel):
     #     await ctx.send("The are error ask bot owner mistake or open Issues in github!")
         
 @setreadcategory.error
+@commands.is_nsfw()
 async def setreadcategory_error(ctx, error):
     if isinstance(error, commands.errors.MissingRequiredArgument):
         await ctx.send("Command missing arguments, need Category name! Please add category to make bot can make channel on category for view nHentai page!")
@@ -326,6 +340,7 @@ async def setreadcategory_error(ctx, error):
         print(error)
 
 @client.command(pass_context = True)
+@commands.is_nsfw()
 async def new(ctx):
     b_text = await ctx.send("Get new release...")
     
@@ -387,6 +402,7 @@ async def new(ctx):
         pass
 
 @client.command(pass_context = True) 
+@commands.is_nsfw()
 async def close(ctx):
     """Close Doujinshi channel
     
@@ -417,6 +433,7 @@ async def close(ctx):
         await ctx.send("There is error, please tell dev")
 
 @client.command(pass_context = True)
+@commands.is_nsfw()
 async def random(ctx):
     randomize = random_id()
     embed = get_code(randomize)
@@ -424,6 +441,7 @@ async def random(ctx):
     await ctx.send(embed=embed)
     
 @client.command(pass_context = True)
+@commands.is_nsfw()
 async def tag(ctx, *, tags):
     await ctx.message.delete()
     offset = 0
@@ -511,6 +529,7 @@ async def tag(ctx, *, tags):
         pass
 
 @client.command(pass_context = True)
+@commands.is_nsfw()
 async def artist(ctx, *, tags):
     await ctx.message.delete()
     offset = 0
@@ -594,7 +613,8 @@ async def artist(ctx, *, tags):
 
 # Pixiv Command :
 
-@client.command(pass_context = True) 
+@client.command(pass_context = True)
+@commands.is_nsfw()
 async def pixiv(ctx, *, data):
     await ctx.send("Processing, Please wait...")
     try:
