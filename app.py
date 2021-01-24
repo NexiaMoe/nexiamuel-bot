@@ -94,7 +94,7 @@ async def on_command_error(ctx, error):
 
 @client.command()
 async def help(ctx):
-    embed = discord.Embed(title="Nexiamuel NSFW Bot",description=f"""
+    embed = discord.Embed(title="Nexiamuel Bot",description=f"""
     This bot is to get doujinshi information from nHentai.
 
     To get start, just send command `{prefix}code <code>`, and the bot will processed the code and will show info of doujinshi
