@@ -14,10 +14,10 @@ Join to my discord server to use development bot: [Join Here](https://discord.gg
  >- [x] Get Information from code
  >- [x] Make new secret text channel to read doujinshi
  >- [ ] Download as Zip
- >- [ ] Search Doujinshi with text or tag or anything
- >- [ ] Random Doujinshi
+ >- [x] Search Doujinshi with text or tag or anything
+ >- [x] Random Doujinshi
  >- [ ] Save last search to database
- >- [ ]  Daily Update from nHentai
+ >- [x]  Daily Update from nHentai
 
 > **Pixiv Command**
  >- [X] Get Information from Code
