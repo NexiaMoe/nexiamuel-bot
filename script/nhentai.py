@@ -308,9 +308,57 @@ def get_code(kode):
     
     return embed
 
-def tag_search(tag, first, second):
-    all_data = f"SELECT * FROM nhentai WHERE(tags || languages) LIKE '%{tag}%'"
-    query = f"SELECT * FROM nhentai WHERE(tags || languages) LIKE '%{tag}%' ORDER BY id DESC LIMIT {first}, {second}"
+def tag_search(tag, offset):
+    print(offset)
+    all_data = f"SELECT * FROM nhentai WHERE ((tags || languages) LIKE '%{tag}%')"
+    query = f"SELECT * FROM nhentai WHERE ((tags || languages) LIKE '%{tag}%') ORDER BY id DESC LIMIT 25 OFFSET {offset}"
+    total = len(cursor.execute(all_data).fetchall())
+    c = cursor.execute(query)
+    r = c.fetchall()
+    dujin = []
+    
+    for data in r:
+        dujin.append({'id': data['id'], 'title': data['title'], 'jp': data['jp'], 'cover': data['cover'], 'page': data['page'], 'tags': data['tags'], 'chara': data['chara'], 'parody': data['parody'], 'artist': data['artist'], 'languages': data['languages'], 'category': data['category'], 'groups': data['groups'], 'uploaded': data['uploaded']})
+    print(dujin)
+    return total, dujin
+
+def embed_tag(data, i, page_tag, total):
+    temp = json.loads(json.dumps(data))
+    # print(data)
+    # print(i)
+    cont = temp[i]
+    embed=discord.Embed(title=cont['title'], url="https://nhentai.net/g/"+str(cont['id']), description=cont['jp'], color=0xff0000)
+    embed.set_image(url=cont['cover'])
+    kode = cont['id']
+    embed.add_field(name="Id / Code", value=cont['id'], inline=True)# ', '.join(str(x) for x in parody)
+    if cont['parody']:
+        embed.add_field(name="Parody", value=cont['parody'].replace(",","\n"), inline=True)
+    if cont['artist']:
+        embed.add_field(name="Artist", value=cont['artist'].replace(",","\n"), inline=True)
+    if cont['groups']:
+        embed.add_field(name="Groups", value=cont['groups'].replace(",","\n"), inline=True)
+    if cont['chara']:
+        embed.add_field(name="Character", value=cont['chara'].replace(",","\n"), inline=True)
+    if cont['tags']:
+        embed.add_field(name="Tag", value=cont['tags'].replace(",","\n"), inline=True)
+    if cont['category']:
+        embed.add_field(name="Category", value=cont['category'].replace(",","\n"), inline=True)
+    if cont['page']:
+        embed.add_field(name="Pages", value=cont['page'], inline=True)
+    if cont['languages']:
+        embed.add_field(name="Languages", value=cont['languages'].replace(",","\n"), inline=True)
+    if cont['uploaded']:
+        embed.add_field(name="Uplaoded at", value=cont['uploaded'], inline=True)
+    
+    # await ctx.send("Requested by {}".format(ctx.message.author.mention))
+    # await ctx.send(embed=embed)
+    embed.set_footer(text="Total Doujin : {}, Doujinshi {} of {}.\nPages {} of {}.".format(total, str(i+1), 25, page_tag, total//25))
+
+    return embed
+
+def artist_search(artist, offset):
+    all_data = f"SELECT * FROM nhentai WHERE artist LIKE '%{artist}%'"
+    query = f"SELECT * FROM nhentai WHERE artist LIKE '%{artist}%' ORDER BY id DESC LIMIT 25 OFFSET {offset}"
     total = len(cursor.execute(all_data).fetchall())
     c = cursor.execute(query)
     r = c.fetchall()
@@ -320,7 +368,7 @@ def tag_search(tag, first, second):
         dujin.append({'id': data['id'], 'title': data['title'], 'jp': data['jp'], 'cover': data['cover'], 'page': data['page'], 'tags': data['tags'], 'chara': data['chara'], 'parody': data['parody'], 'artist': data['artist'], 'languages': data['languages'], 'category': data['category'], 'groups': data['groups'], 'uploaded': data['uploaded']})
     return total, dujin
 
-def embed_tag(data, i, page_tag, total):
+def embed_artist(data, i, page_tag, total):
     temp = json.loads(json.dumps(data))
     cont = temp[i]
     embed=discord.Embed(title=cont['title'], url="https://nhentai.net/g/"+str(cont['id']), description=cont['jp'], color=0xff0000)

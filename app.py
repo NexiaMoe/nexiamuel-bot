@@ -402,16 +402,18 @@ async def random(ctx):
 @client.command(pass_context = True)
 async def tag(ctx, *, tags):
     await ctx.message.delete()
-    start = 0
-    end = 25
+    offset = 0
     if ", " in tags:
         keyword = str(tags).replace(", ", "%%")
-    if " " in tags:
+    elif " " in tags:
         keyword = str(tags).replace(" ", "%%")
     else:
         keyword = str(tags)
+    total, temp = tag_search(keyword, offset)
+        
     
-        total, temp = tag_search(keyword, start, end)
+    # print(keyword)
+    # print(temp)
     
     page_tag = 1
     # print(temp)
@@ -441,30 +443,29 @@ async def tag(ctx, *, tags):
     while True:
         if str(reaction) == '⏮':
             
-            if start > 0:
-                start = start - 25
-            if end >= 25:
-                end = end - 25
+            if offset > 0:
+                offset = offset - 25
             i = 0
             
             if page_tag > 1:
                 page_tag = page_tag - 1
-                total, temp = tag_search(tags, start, end)
+                total, temp = tag_search(keyword, offset)
                 await message.edit(embed = embed_tag(temp, i, page_tag, total))
         elif str(reaction) == '◀':
             if i > 0:
                 i = i - 1
                 await message.edit(embed = embed_tag(temp, i, page_tag, total))
         elif str(reaction) == '▶':
-            if i < 25:
+            if i < 24:
                 i = i + 1
                 await message.edit(embed = embed_tag(temp, i, page_tag, total))
         elif str(reaction) == '⏭':
-            start = start + 25
-            end = end + 25
+            offset = offset + 25
+            total, temp = tag_search(keyword, offset)
             i = 0
             page_tag = page_tag + 1
-            total, temp = tag_search(tags, start, end)
+            
+            # time.sleep(1)
             await message.edit(embed = embed_tag(temp, i, page_tag, total))
         elif str(reaction) == cross:
             await message.delete()
@@ -482,6 +483,85 @@ async def tag(ctx, *, tags):
     await message.clear_reactions()
     await message.delete() 
 
+@client.command(pass_context = True)
+async def artist(ctx, *, tags):
+    await ctx.message.delete()
+    offset = 0
+    if ", " in tags:
+        keyword = str(tags).replace(", ", "%%")
+    if " " in tags:
+        keyword = str(tags).replace(" ", "%%")
+    else:
+        keyword = str(tags)
+    
+    # print(keyword)
+    total, temp = artist_search(keyword, offset)
+    
+    page_tag = 1
+    # print(keyword)
+    
+    
+    cross = "\U0000274C"
+    open_book = "\U0001F4D6"
+    try:
+        message = await ctx.send(embed = embed_artist(temp, 0, page_tag, total))
+    except:
+        message = await ctx.send("Data not found, check tag again!")
+        return
+        
+    await message.add_reaction('⏮')
+    await message.add_reaction('◀')
+    await message.add_reaction('▶')
+    await message.add_reaction('⏭')
+    await message.add_reaction(cross)
+    await message.add_reaction(open_book)
+    await message.add_reaction('⭕')
+
+    def check(reaction, user):
+        
+        return reaction.message.id == reaction.message.id
+    i = 0
+    reaction = None
+    while True:
+        if str(reaction) == '⏮':
+            
+            if offset > 0:
+                offset = offset - 25
+            i = 0
+            
+            if page_tag > 1:
+                page_tag = page_tag - 1
+                total, temp = artist_search(keyword, offset)
+                await message.edit(embed = embed_artist(temp, i, page_tag, total))
+        elif str(reaction) == '◀':
+            if i > 0:
+                i = i - 1
+                await message.edit(embed = embed_artist(temp, i, page_tag, total))
+        elif str(reaction) == '▶':
+            if i < 24:
+                i = i + 1
+                await message.edit(embed = embed_artist(temp, i, page_tag, total))
+        elif str(reaction) == '⏭':
+            offset = offset + 25
+            i = 0
+            page_tag = page_tag + 1
+            total, temp = artist_search(keyword, offset)
+            await message.edit(embed = embed_artist(temp, i, page_tag, total))
+        elif str(reaction) == cross:
+            await message.delete()
+        elif str(reaction) == open_book:
+            await view(ctx, json.loads(json.dumps(temp))[i]['id'])
+            await message.edit(content="Opened.")
+            
+        
+        try:
+            reaction, user = await client.wait_for('reaction_add', timeout = 300.0, check = check)
+            await message.remove_reaction(reaction, user)
+        except:
+            break
+
+    await message.clear_reactions()
+    await message.delete()
 
 # Pixiv Command :
 
