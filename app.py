@@ -60,7 +60,6 @@ async def on_guild_join(guild):
 @client.command()
 @commands.has_permissions(administrator = True)
 async def changeprefix(ctx, prefix):
-    # print(prefix)
     c = cursor.execute("SELECT prefix FROM "+db_name+" WHERE id == ?", (int(ctx.guild.id),))
     data = c.fetchone()
     if data == None:
@@ -72,7 +71,21 @@ async def changeprefix(ctx, prefix):
         cursor.execute(query)
         db.commit()
         await ctx.send(f"Prefix has been set to {prefix}")
-# prefix = ""
+
+@client.command()
+@commands.has_permissions(administrator = True)
+async def setprefix(ctx, prefix):
+    c = cursor.execute("SELECT prefix FROM "+db_name+" WHERE id == ?", (int(ctx.guild.id),))
+    data = c.fetchone()
+    if data == None:
+        cursor.execute("INSERT INTO "+db_name+" (id, server_name, category_id, category_name, prefix) VALUES(?, ?, ?, ?, ?)", (int(ctx.guild.id), str(ctx.guild), int("0"), str(""), str(prefix),))
+        db.commit()
+        await ctx.send(f"Prefix has been set to {prefix}")
+    else:
+        query = f"UPDATE {db_name} SET prefix = '{prefix}' WHERE id == {ctx.guild.id}"
+        cursor.execute(query)
+        db.commit()
+        await ctx.send(f"Prefix has been set to {prefix}")
 
 @client.event
 async def on_command_error(ctx, error):
@@ -83,12 +96,13 @@ async def on_command_error(ctx, error):
     if isinstance(error, commands.MissingPermissions):
         await ctx.send("**You dont have all the requirements or permissions for using this command :angry:**")
     raise error
+
 @client.command()
 async def help(ctx):
     embed = discord.Embed(title="Nexiamuel NSFW Bot",description=f"""
-    This bot is useful to get doujinshi information from nHentai.
+    This bot is to get doujinshi information from nHentai.
 
-    To get start, just send command `code <code>`, and the bot will processed the code and will s>
+    To get start, just send command `{prefix}code <code>`, and the bot will processed the code and will show info of doujinshi
 
     Please check the command_prefix, Default is g/
     
@@ -99,10 +113,12 @@ async def help(ctx):
     - `ping` : Get status from Bot
     - `help` : Open this help
     - `view <code>` : View Doujinshi to secret channel
+    - `close` : To Close secret channel, must on the right category channel.
     - `random` : Get random code / Gacha.
     - `new` : Get latest dujin, updated an hour.
-    - `close` : To Close secret channel, must on the right category channel.
-   
+    - `tag <tags>` : Get doujinshi based of tags, can be multiple tags, example : `tag english milf`
+    - `artist <artist>` : Get doujinshi based of artist
+    
     **pixiv**
     - `pixiv <code> / <url>` : Get illustrator from pixiv
     
@@ -110,7 +126,7 @@ async def help(ctx):
     - `changeprefix <prefix> or setprefix <prefix>` : Change bot prefix on this server
     - `prefix` : Get prefix on this server
     - `setreadcategory <category>` : Set category channel to read
-    Will be add more feature!""" , color=0x00ccff)
+    Will add more feature on the future! If there are any problem, please open issues on my github!""" , color=0x00ccff)
     await ctx.send(embed=embed)
 
 @client.event
@@ -240,8 +256,8 @@ async def view(ctx, kode : int):
     except:
         await ctx.send(f"Please configure category name to read with {prefix}!")
     
-
 @client.command(pass_context = True)
+@commands.has_permissions(administrator = True)
 async def setreadcategory(ctx, *, channel):
     channel_name = discord.utils.get(ctx.guild.categories, name=channel)
     query = f"UPDATE {db_name} set category_id = {channel_name.id}, category_name = '{channel_name}' WHERE id = {ctx.message.guild.id}"
@@ -395,6 +411,7 @@ async def close(ctx):
                     break
     except:
         await ctx.send("There is error, please tell dev")
+
 @client.command(pass_context = True)
 async def random(ctx):
     randomize = random_id()

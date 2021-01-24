@@ -309,7 +309,6 @@ def get_code(kode):
     return embed
 
 def tag_search(tag, offset):
-    # print(offset)
     all_data = f"SELECT * FROM nhentai WHERE ((tags || languages) LIKE '%{tag}%' OR (languages || tags) LIKE '%{tag}%')"
     query = f"SELECT * FROM nhentai WHERE ((tags || languages) LIKE '%{tag}%' OR (languages || tags) LIKE '%{tag}%') ORDER BY id DESC LIMIT 25 OFFSET {offset}"
     total = len(cursor.execute(all_data).fetchall())
@@ -319,13 +318,10 @@ def tag_search(tag, offset):
     
     for data in r:
         dujin.append({'id': data['id'], 'title': data['title'], 'jp': data['jp'], 'cover': data['cover'], 'page': data['page'], 'tags': data['tags'], 'chara': data['chara'], 'parody': data['parody'], 'artist': data['artist'], 'languages': data['languages'], 'category': data['category'], 'groups': data['groups'], 'uploaded': data['uploaded']})
-    # print(dujin)
     return total, dujin
 
 def embed_tag(data, i, page_tag, total):
     temp = json.loads(json.dumps(data))
-    # print(data)
-    # print(i)
     cont = temp[i]
     embed=discord.Embed(title=cont['title'], url="https://nhentai.net/g/"+str(cont['id']), description=cont['jp'], color=0xff0000)
     embed.set_image(url=cont['cover'])
