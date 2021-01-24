@@ -360,8 +360,11 @@ async def new(ctx):
         except:
             break
 
-    await message.clear_reactions()
-    await message.delete()
+    try:
+        await message.clear_reactions()
+        await message.delete()
+    except:
+        pass
 
 @client.command(pass_context = True) 
 async def close(ctx):
@@ -480,8 +483,11 @@ async def tag(ctx, *, tags):
         except:
             break
 
-    await message.clear_reactions()
-    await message.delete() 
+    try:
+        await message.clear_reactions()
+        await message.delete()
+    except:
+        pass
 
 @client.command(pass_context = True)
 async def artist(ctx, *, tags):
@@ -559,9 +565,11 @@ async def artist(ctx, *, tags):
             await message.remove_reaction(reaction, user)
         except:
             break
-
-    await message.clear_reactions()
-    await message.delete()
+    try:
+        await message.clear_reactions()
+        await message.delete()
+    except:
+        pass   
 
 # Pixiv Command :
 

@@ -310,8 +310,8 @@ def get_code(kode):
 
 def tag_search(tag, offset):
     print(offset)
-    all_data = f"SELECT * FROM nhentai WHERE ((tags || languages) LIKE '%{tag}%')"
-    query = f"SELECT * FROM nhentai WHERE ((tags || languages) LIKE '%{tag}%') ORDER BY id DESC LIMIT 25 OFFSET {offset}"
+    all_data = f"SELECT * FROM nhentai WHERE ((tags || languages) LIKE '{tag}' OR (languages || tags) LIKE '{tag}'))"
+    query = f"SELECT * FROM nhentai WHERE ((tags || languages) LIKE '{tag}' OR (languages || tags) LIKE '{tag}') ORDER BY id DESC LIMIT 25 OFFSET {offset}"
     total = len(cursor.execute(all_data).fetchall())
     c = cursor.execute(query)
     r = c.fetchall()
