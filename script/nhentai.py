@@ -140,7 +140,7 @@ async def new_upload(code):
                 x += 1
                 cursor.execute("INSERT INTO main." + db_name + " (id, title, jp, cover, page, tags, chara, parody, artist, languages, category, groups, uploaded) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)",(i, str(title_eng), str(title_jp), str(cover), pages[0], ', '.join(str(x) for x in tag), ', '.join(str(x) for x in chara), ', '.join(str(x) for x in parody), ', '.join(str(x) for x in artist), ', '.join(str(x) for x in language), ', '.join(str(x) for x in category), ', '.join(str(x) for x in groups), str(time)))
                 
-                db.commit() 
+    db.commit()             
     print("done")
 
 def get_new():
