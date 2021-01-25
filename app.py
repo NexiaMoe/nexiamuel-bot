@@ -402,7 +402,7 @@ async def new(ctx):
         pass
 
 @client.command(pass_context = True) 
-@commands.is_nsfw()
+# @commands.is_nsfw()
 async def close(ctx):
     """Close Doujinshi channel
     
