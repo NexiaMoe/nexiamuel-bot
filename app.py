@@ -94,6 +94,8 @@ async def on_command_error(ctx, error):
         await ctx.send('**Please pass in all requirements.**')
     if isinstance(error, commands.MissingPermissions):
         await ctx.send("**You dont have all the requirements or permissions for using this command :angry:**")
+    if isinstance(error, commands.NSFWChannelRequired):
+        await ctx.send("**You need run this command on NSFW Channel**")
     raise error
 
 @client.command()
@@ -264,7 +266,7 @@ async def view(ctx, kode : int):
                             for kirim in link:
                                 await channel.send(kirim)
                             await channel.send("Done, Enjoy!")
-                            await channel.send("Jangan lupa hapus channel dengan command .close!")
+                            await channel.send("Don't forget close the channel with command close!")
                 else:
                     # print("sudah ada")
                     overwrite = discord.PermissionOverwrite(read_messages=True, send_messages=True)
