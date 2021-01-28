@@ -436,12 +436,18 @@ async def close(ctx):
 
 @client.command(pass_context = True)
 @commands.is_nsfw()
-async def random(ctx):
-    randomize = random_id()
-    embed = get_code(randomize)
-    await ctx.send("Hey {}, You get this:".format(ctx.message.author.mention))
-    await ctx.send(embed=embed)
-    
+async def random(ctx, tag: str = None):
+    if tag is None:
+        randomize = random_id()
+        embed = get_code(randomize)
+        await ctx.send("Hey {}, You get this:".format(ctx.message.author.mention))
+        await ctx.send(embed=embed)
+    else :
+        kode = await random_id_tag(tag)
+        embed = get_code(kode)
+        await ctx.send("Hey {}, You get this:".format(ctx.message.author.mention))
+        await ctx.send(embed=embed)
+
 @client.command(pass_context = True)
 @commands.is_nsfw()
 async def tag(ctx, *, tags):

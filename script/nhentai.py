@@ -138,7 +138,7 @@ async def new_upload(code):
                     cover = ""       
                 # Send Message
                 x += 1
-                cursor.execute("INSERT INTO main." + db_name + " (id, title, jp, cover, page, tags, chara, parody, artist, languages, category, groups, uploaded) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)",(i, str(title_eng), str(title_jp), str(cover), pages[0], ', '.join(str(x) for x in tag), ', '.join(str(x) for x in chara), ', '.join(str(x) for x in parody), ', '.join(str(x) for x in artist), ', '.join(str(x) for x in language), ', '.join(str(x) for x in category), ', '.join(str(x) for x in groups), str(time)))
+                cursor.execute("INSERT or IGNORE INTO " + db_name + " (id, title, jp, cover, page, tags, chara, parody, artist, languages, category, groups, uploaded) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)",(i, str(title_eng), str(title_jp), str(cover), pages[0], ', '.join(str(x) for x in tag), ', '.join(str(x) for x in chara), ', '.join(str(x) for x in parody), ', '.join(str(x) for x in artist), ', '.join(str(x) for x in language), ', '.join(str(x) for x in category), ', '.join(str(x) for x in groups), str(time)))
                 
     db.commit()             
     print("done")
@@ -193,6 +193,18 @@ def random_id():
     randomize = random.randrange(1, latest)
     # print(randomize)
     return randomize
+
+async def random_id_tag(tag):
+    query = f"SELECT id FROM nhentai WHERE tags LIKE '%{tag}%' ORDER BY id DESC"
+    r = cursor.execute(query).fetchall()
+    hasil = []
+    async for a in r:
+        hasil.append(a['id'])
+    
+    randomize = random.randrange(0, len(hasil))
+    kode = hasil[randomize]
+    # print(randomize)
+    return kode
 
 def get_code(kode):
     r = req.get("https://nhentai.net/g/"+str(kode))
