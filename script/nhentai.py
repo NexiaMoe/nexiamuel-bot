@@ -410,3 +410,163 @@ def embed_artist(data, i, page_tag, total):
     embed.set_footer(text="Total Doujin : {}, Doujinshi {} of {}.\nPages {} of {}.".format(total, str(i+1), 25, page_tag, total//25))
 
     return embed
+
+async def get_popular():
+    print("Getting Popular Now")
+    async with aiohttp.ClientSession() as session:
+        async with session.get("https://nhentai.net") as r:
+        # r = req.get("https://nhentai.net").text
+            if r.status == 429:
+                print("Error")
+                return
+            text = await r.read()
+            raw = bs(text, 'html.parser')
+
+            data = raw.find('div', class_="container index-container index-popular")
+            list_code = []
+            for code in data.find_all('a', class_="cover", href=True):
+                list_code.append(int(''.join(filter(str.isdigit, code['href']))))
+            
+            return list_code
+
+def popular_detail(code):
+    def insert_to_db(z):
+        # async with aiohttp.ClientSession() as session:
+        #     async with session.get("https://nhentai.net/g/"+str(z)) as r:
+        r = req.get("https://nhentai.net/g/"+str(z))
+        text = r.text
+        raw = bs(text, 'html.parser')
+        try:
+            title_eng = raw.find("h1", class_="title").text
+        except AttributeError:
+            title_eng = ""
+        try:
+            title_jp = raw.find("h2", class_="title").text
+        except AttributeError:
+            title_jp = ""
+            
+        tag = []
+        chara = []
+        parody = []
+        artist = []
+        language = []
+        category = []
+        pages = []
+        groups = []
+        
+        try:
+            for p in raw.find_all("span", class_="tags")[0].find_all("span", class_="name"):
+                parody.append(p.text.capitalize())
+        except:
+            parody.append("")
+
+        try:
+            for charachter in raw.find_all("span", class_="tags")[1].find_all("span", class_="name"):
+                chara.append(charachter.text.capitalize())
+        except:
+            chara.append("")
+
+        try:
+            for tag_all in raw.find_all("span", class_="tags")[2].find_all("span", class_="name"):
+                tag.append(tag_all.text.capitalize())
+        except:
+            tag.append("")
+
+        try:
+            for ar in raw.find_all("span", class_="tags")[3].find_all("span", class_="name"):
+                artist.append(ar.text.capitalize())
+        except:
+            artist.append("")
+            
+        try:
+            for gr in raw.find_all("span", class_="tags")[4].find_all("span", class_="name"):
+                groups.append(gr.text.capitalize())
+        except:
+                groups.append("")
+
+        try:
+            for la in raw.find_all("span", class_="tags")[5].find_all("span", class_="name"):
+                language.append(la.text.capitalize())
+        except:
+            language.append("")
+                
+        try:
+            for ca in raw.find_all("span", class_="tags")[6].find_all("span", class_="name"):
+                category.append(ca.text.capitalize())
+        except:
+                category.append("")
+                
+        try:
+            for pg in raw.find_all("span", class_="tags")[7].find_all("span", class_="name"):
+                pages.append(pg.text.capitalize())
+        except:
+            pages.append("")
+            
+        try:     
+            for up in raw.find_all("span", class_="tags")[8]:
+                clock = str(up['datetime']).replace("T", " ").replace("+00:00", "")
+                time = datetime.strptime(clock, '%Y-%m-%d %H:%M:%S.%f')
+        except Exception as e:
+            # print(e)
+            time="None"
+        try:
+            cover = raw.find("div", {"id": "cover"}).find("img", class_="lazyload")['data-src'] 
+        except:
+            cover = ""       
+        # Send Message
+        cursor.execute("INSERT or IGNORE INTO " + db_name + " (id, title, jp, cover, page, tags, chara, parody, artist, languages, category, groups, uploaded) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)",(z, str(title_eng), str(title_jp), str(cover), pages[0], ', '.join(str(x) for x in tag), ', '.join(str(x) for x in chara), ', '.join(str(x) for x in parody), ', '.join(str(x) for x in artist), ', '.join(str(x) for x in language), ', '.join(str(x) for x in category), ', '.join(str(x) for x in groups), str(time)))
+        db.commit()
+                
+    kode = code
+    total = len(kode)
+    # print(type(kode))
+    dujin = []
+    
+    for a in kode:
+        
+        # print(a)
+        query = f"SELECT * FROM nhentai WHERE id = {a}"
+        c = cursor.execute(query)
+        r = c.fetchall()
+        # print(r)
+        
+        for data in r:
+            try:
+                dujin.append({'id': data['id'], 'title': data['title'], 'jp': data['jp'], 'cover': data['cover'], 'page': data['page'], 'tags': data['tags'], 'chara': data['chara'], 'parody': data['parody'], 'artist': data['artist'], 'languages': data['languages'], 'category': data['category'], 'groups': data['groups'], 'uploaded': data['uploaded']})
+            except:
+                insert_to_db(a)
+                dujin.append({'id': data['id'], 'title': data['title'], 'jp': data['jp'], 'cover': data['cover'], 'page': data['page'], 'tags': data['tags'], 'chara': data['chara'], 'parody': data['parody'], 'artist': data['artist'], 'languages': data['languages'], 'category': data['category'], 'groups': data['groups'], 'uploaded': data['uploaded']})
+
+    return total, dujin
+
+def embed_popular(data, i, total):
+    temp = json.loads(json.dumps(data))
+    cont = temp[i]
+    embed=discord.Embed(title=cont['title'], url="https://nhentai.net/g/"+str(cont['id']), description=cont['jp'], color=0xff0000)
+    embed.set_image(url=cont['cover'])
+    kode = cont['id']
+    embed.add_field(name="Id / Code", value=cont['id'], inline=True)# ', '.join(str(x) for x in parody)
+    if cont['parody']:
+        embed.add_field(name="Parody", value=cont['parody'].replace(",","\n"), inline=True)
+    if cont['artist']:
+        embed.add_field(name="Artist", value=cont['artist'].replace(",","\n"), inline=True)
+    if cont['groups']:
+        embed.add_field(name="Groups", value=cont['groups'].replace(",","\n"), inline=True)
+    if cont['chara']:
+        embed.add_field(name="Character", value=cont['chara'].replace(",","\n"), inline=True)
+    if cont['tags']:
+        embed.add_field(name="Tag", value=cont['tags'].replace(",","\n"), inline=True)
+    if cont['category']:
+        embed.add_field(name="Category", value=cont['category'].replace(",","\n"), inline=True)
+    if cont['page']:
+        embed.add_field(name="Pages", value=cont['page'], inline=True)
+    if cont['languages']:
+        embed.add_field(name="Languages", value=cont['languages'].replace(",","\n"), inline=True)
+    if cont['uploaded']:
+        embed.add_field(name="Uplaoded at", value=cont['uploaded'], inline=True)
+    
+    # await ctx.send("Requested by {}".format(ctx.message.author.mention))
+    # await ctx.send(embed=embed)
+    embed.set_footer(text="Doujinshi {} of {}.".format(str(i+1), total))
+
+    return embed

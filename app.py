@@ -117,7 +117,9 @@ async def help(ctx):
     - `view <code>` : View Doujinshi to secret channel
     - `close` : To Close secret channel, must on the right category channel.
     - `random` : Get random code / Gacha.
+    - `random <tags>` : Get random code / gacha by Tags
     - `new` : Get latest dujin, updated an hour.
+    - `popular` : Get Popular today
     - `tag <tags>` : Get doujinshi based of tags, can be multiple tags, example : `tag english milf`
     - `artist <artist>` : Get doujinshi based of artist
     
@@ -455,6 +457,66 @@ async def random(ctx, tag: str = None):
             await ctx.send("Tag not found, please check again!")
         
 
+@client.command(pass_context = True)
+@commands.is_nsfw()
+async def popular(ctx):
+    msg = await ctx.send("Getting new Popular now")
+    kode = await get_popular()
+    total, dujin = popular_detail(kode)
+    cross = "\U0000274C"
+    open_book = "\U0001F4D6"
+    await ctx.message.delete()
+    await msg.delete()
+    message = await ctx.send(embed = embed_popular(dujin, 0, total))
+    await message.add_reaction('⏮')
+    await message.add_reaction('◀')
+    await message.add_reaction('▶')
+    await message.add_reaction('⏭')
+    await message.add_reaction(cross)
+    await message.add_reaction(open_book)
+    await message.add_reaction('⭕')
+
+    def check(reaction, user):
+        
+        return reaction.message.id == reaction.message.id
+
+    i = 0
+    reaction = None
+
+    while True:
+        if str(reaction) == '⏮':
+            i = 0
+            await message.edit(embed = embed_popular(dujin, i, total))
+        elif str(reaction) == '◀':
+            if i > 0:
+                i -= 1
+                await message.edit(embed = embed_popular(dujin, i, total))
+        elif str(reaction) == '▶':
+            if i < len(dujin)-1:
+                i += 1
+                await message.edit(embed = embed_popular(dujin, i, total))
+        elif str(reaction) == '⏭':
+            i = len(dujin)-1
+            await message.edit(embed = embed_popular(dujin, i, total))
+        elif str(reaction) == cross:
+            await message.delete()
+        elif str(reaction) == open_book:
+            await view(ctx, json.loads(json.dumps(dujin))[i]['id'])
+            await message.edit(content="Opened.")
+            
+        
+        try:
+            reaction, user = await client.wait_for('reaction_add', timeout = 300.0, check = check)
+            await message.remove_reaction(reaction, user)
+        except:
+            break
+
+    try:
+        await message.clear_reactions()
+        await message.delete()
+    except:
+        pass
+    
 @client.command(pass_context = True)
 @commands.is_nsfw()
 async def tag(ctx, *, tags):
