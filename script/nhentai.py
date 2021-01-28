@@ -198,8 +198,11 @@ async def random_id_tag(tag):
     query = f"SELECT id FROM nhentai WHERE tags LIKE '%{tag}%' ORDER BY id DESC"
     r = cursor.execute(query).fetchall()
     hasil = []
-    async for a in r:
-        hasil.append(a['id'])
+    
+    async def get_id():
+        for a in r:
+            hasil.append(a['id'])
+    b = await get_id()
     
     randomize = random.randrange(0, len(hasil))
     kode = hasil[randomize]
