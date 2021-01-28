@@ -527,19 +527,19 @@ def popular_detail(code):
         # print(a)
         query = f"SELECT * FROM nhentai WHERE id = {a}"
         c = cursor.execute(query)
-        r = c.fetchall()
+        data = c.fetchone()
         # print(r)
-        
-        for data in r:
-            try:
-                dujin.append({'id': data['id'], 'title': data['title'], 'jp': data['jp'], 'cover': data['cover'], 'page': data['page'], 'tags': data['tags'], 'chara': data['chara'], 'parody': data['parody'], 'artist': data['artist'], 'languages': data['languages'], 'category': data['category'], 'groups': data['groups'], 'uploaded': data['uploaded']})
-            except:
-                insert_to_db(a)
-                query = f"SELECT * FROM nhentai WHERE id = {a}"
-                c = cursor.execute(query)
-                r = c.fetchall()
-                for b in r:
-                    dujin.append({'id': b['id'], 'title': b['title'], 'jp': b['jp'], 'cover': b['cover'], 'page': b['page'], 'tags': b['tags'], 'chara': b['chara'], 'parody': b['parody'], 'artist': b['artist'], 'languages': b['languages'], 'category': b['category'], 'groups': b['groups'], 'uploaded': b['uploaded']})
+        try:
+            dujin.append({'id': data['id'], 'title': data['title'], 'jp': data['jp'], 'cover': data['cover'], 'page': data['page'], 'tags': data['tags'], 'chara': data['chara'], 'parody': data['parody'], 'artist': data['artist'], 'languages': data['languages'], 'category': data['category'], 'groups': data['groups'], 'uploaded': data['uploaded']})
+        except:
+            print(True)
+            insert_to_db(a)
+            query = f"SELECT * FROM nhentai WHERE id = {a}"
+            d = cursor.execute(query)
+            e = d.fetchall()
+            for b in e:
+                dujin.append({'id': b['id'], 'title': b['title'], 'jp': b['jp'], 'cover': b['cover'], 'page': b['page'], 'tags': b['tags'], 'chara': b['chara'], 'parody': b['parody'], 'artist': b['artist'], 'languages': b['languages'], 'category': b['category'], 'groups': b['groups'], 'uploaded': b['uploaded']})     
+            
 
     return total, dujin
 
