@@ -443,8 +443,10 @@ async def random(ctx, tag: str = None):
         await ctx.send("Hey {}, You get this:".format(ctx.message.author.mention))
         await ctx.send(embed=embed)
     else :
+        mmsss = await ctx.send("Please wait, it might take a while...")
         kode = await random_id_tag(tag)
         embed = get_code(kode)
+        await mmsss.delete()
         await ctx.send("Hey {}, You get this:".format(ctx.message.author.mention))
         await ctx.send(embed=embed)
 
