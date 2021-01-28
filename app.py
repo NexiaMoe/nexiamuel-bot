@@ -463,6 +463,7 @@ async def popular(ctx):
     msg = await ctx.send("Getting new Popular now")
     kode = await get_popular()
     total, dujin = popular_detail(kode)
+    print(len(dujin))
     cross = "\U0000274C"
     open_book = "\U0001F4D6"
     await ctx.message.delete()
