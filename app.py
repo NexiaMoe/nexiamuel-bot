@@ -163,7 +163,7 @@ async def on_message(ctx):
             await client.process_commands(ctx)
         pass
     
-@tasks.loop(hours=1)
+@tasks.loop(minutes=15)
 async def sched_new():
     # print("Disabled")
     await new_upload_code()
