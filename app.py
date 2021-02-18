@@ -696,9 +696,9 @@ async def dl(ctx, kode : int):
     msg = await ctx.send("Please wait ...")
     await save_pdf(kode)
     await msg.edit(content = "Uploading ...")
-    if ctx.guild.premium_tier != [0,1]:
+    if ctx.guild.premium_tier not in [2,3]:
         await msg.delete()
-        await ctx.send(file=discord.File(str(kode)+'.pdf'))
+        await ctx.send(file=discord.File(str(f"../dujin/{kode}.pdf")))
     else:
         link = f"https://download.ajipw.my.id/{kode}.pdf"
         size = os.path.getsize(f'../dujin/{kode}.pdf')
