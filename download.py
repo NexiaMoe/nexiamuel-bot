@@ -5,6 +5,7 @@ import re
 import img2pdf
 import multiprocessing as mp
 from os import path
+import os
 
 def zu(args):
     linkss = args
@@ -22,39 +23,80 @@ def content_list(link):
 #     async with session.get("https://nhentai.net/g/"+str(kode)+"/1") as r:
 code = argv[1]
 if __name__ == '__main__':
-    if path.isfile(f'../dujin/{code}.pdf') == True:
-        print("File Exist, Send link download...")
-        pass
-    else:
-        url = req.get(f"https://nhentai.net/g/{code}/1")
-        text = url.text
-        raw = bs(text, 'html.parser')
-        link = []
+    if os.name != 'nt':
+        if path.isfile(f'../dujin/{code}.pdf') == True and path.getsize(f'../dujin/{code}.pdf') != 0:
+            print("File Exist, Send link download...")
+            pass
+        else:
+            url = req.get(f"https://nhentai.net/g/{code}/1")
+            text = url.text
+            raw = bs(text, 'html.parser')
+            link = []
 
-        total_pages = int(raw.find("span", class_="num-pages").text) + 1
-        #print(total_pages)
-        total_pages = int(raw.find("span", class_="num-pages").text) + 1
-        # print(total_pages)
+            total_pages = int(raw.find("span", class_="num-pages").text) + 1
+            #print(total_pages)
+            total_pages = int(raw.find("span", class_="num-pages").text) + 1
+            # print(total_pages)
 
-        ext=".jpg"
-        media_id = raw.find("section", {"id": "image-container"}).find("img")['src'].replace("https://i.nhentai.net/galleries/","").replace("/1.jpg","")
-        if re.findall(r"png",media_id):
-            ext = ".png"
-            media_id = raw.find("section", {"id": "image-container"}).find("img")['src'].replace("https://i.nhentai.net/galleries/","").replace("/1.png","")
+            ext=".jpg"
+            media_id = raw.find("section", {"id": "image-container"}).find("img")['src'].replace("https://i.nhentai.net/galleries/","").replace("/1.jpg","")
+            if re.findall(r"png",media_id):
+                ext = ".png"
+                media_id = raw.find("section", {"id": "image-container"}).find("img")['src'].replace("https://i.nhentai.net/galleries/","").replace("/1.png","")
 
-        for a in range(1, total_pages):
-            link.append("https://i.nhentai.net/galleries/"+str(media_id)+"/"+str(a)+ext)
+            for a in range(1, total_pages):
+                link.append("https://i.nhentai.net/galleries/"+str(media_id)+"/"+str(a)+ext)
 
-        # print(req.get(link[0]).content)
-        
-
-
-        with open(f"../dujin/{code}.pdf", 'wb') as f:
-            u = 1
-            pool = mp.Pool(4)
-            content = pool.imap(zu, zip(link))
-            content = [bytes(ent) for sublist in content for ent in sublist]
+            # print(req.get(link[0]).content)
             
-            print(len(content))
-            f.write(img2pdf.convert(content))
+
+
+            with open(f"../dujin/{code}.pdf", 'wb') as f:
+                u = 1
+                pool = mp.Pool(4)
+                content = pool.imap(zu, zip(link))
+                content = [bytes(ent) for sublist in content for ent in sublist]
+                a4inpt = (img2pdf.mm_to_pt(210),img2pdf.mm_to_pt(297))
+                layout_fun = img2pdf.get_layout_fun(a4inpt)
+
+                print(len(content))
+                f.write(img2pdf.convert(content, layout_fun=layout_fun))
     
+    else:
+        if path.isfile(f'{code}.pdf') == True and path.getsize(f'{code}.pdf') != 0:
+            print("File Exist, Send link download...")
+            pass
+        else:
+            url = req.get(f"https://nhentai.net/g/{code}/1")
+            text = url.text
+            raw = bs(text, 'html.parser')
+            link = []
+
+            total_pages = int(raw.find("span", class_="num-pages").text) + 1
+            #print(total_pages)
+            total_pages = int(raw.find("span", class_="num-pages").text) + 1
+            # print(total_pages)
+
+            ext=".jpg"
+            media_id = raw.find("section", {"id": "image-container"}).find("img")['src'].replace("https://i.nhentai.net/galleries/","").replace("/1.jpg","")
+            if re.findall(r"png",media_id):
+                ext = ".png"
+                media_id = raw.find("section", {"id": "image-container"}).find("img")['src'].replace("https://i.nhentai.net/galleries/","").replace("/1.png","")
+
+            for a in range(1, total_pages):
+                link.append("https://i.nhentai.net/galleries/"+str(media_id)+"/"+str(a)+ext)
+
+            # print(req.get(link[0]).content)
+            
+
+
+            with open(f"{code}.pdf", 'wb') as f:
+                u = 1
+                pool = mp.Pool(2)
+                content = pool.imap(zu, zip(link))
+                content = [bytes(ent) for sublist in content for ent in sublist]
+                a4inpt = (img2pdf.mm_to_pt(210),img2pdf.mm_to_pt(297))
+                layout_fun = img2pdf.get_layout_fun(a4inpt)
+
+                print(len(content))
+                f.write(img2pdf.convert(content, layout_fun=layout_fun))

@@ -696,24 +696,44 @@ async def dl(ctx, kode : int):
     msg = await ctx.send("Please wait ...")
     await save_pdf(kode)
     await msg.edit(content = "Uploading ...")
-    get_size = os.path.getsize(f'../dujin/{kode}.pdf')
+    if os.name != 'nt':
+        get_size = os.path.getsize(f'../dujin/{kode}.pdf')
+    else:
+        get_size = os.path.getsize(f'{kode}.pdf')
     mb = get_size/(1024*1024)
     size = f"{mb:.2f}"
-    if ctx.guild.premium_tier == 2:
-        await msg.delete()
-        await ctx.send(file=discord.File(str(f"../dujin/{kode}.pdf")))
-    elif ctx.guild.premium_tier == 3:
-        await msg.delete()
-        await ctx.send(file=discord.File(str(f"../dujin/{kode}.pdf")))
-    elif get_size <= 7864320:
-        await msg.delete()
-        await ctx.send(file=discord.File(str(f"../dujin/{kode}.pdf")))
+    if os.name != 'nt':
+        if ctx.guild.premium_tier == 2:
+            await msg.delete()
+            await ctx.send(file=discord.File(str(f"../dujin/{kode}.pdf")))
+        elif ctx.guild.premium_tier == 3:
+            await msg.delete()
+            await ctx.send(file=discord.File(str(f"../dujin/{kode}.pdf")))
+        elif get_size <= 7864320:
+            await msg.delete()
+            await ctx.send(file=discord.File(str(f"../dujin/{kode}.pdf")))
+        else:
+            link = f"https://download.ajipw.my.id/{kode}.pdf"
+            await msg.delete()
+            await ctx.send("File Size " + str(size)+" MB")
+            await ctx.send("Enjoy! " + str(link))
     else:
-        link = f"https://download.ajipw.my.id/{kode}.pdf"
-        await msg.delete()
-        await ctx.send("File Size " + str(size)+" MB")
-        await ctx.send("Enjoy! " + str(link))
-        
+        if ctx.guild.premium_tier == 2:
+            await msg.delete()
+            await ctx.send(file=discord.File(str(f"{kode}.pdf")))
+        elif ctx.guild.premium_tier == 3:
+            await msg.delete()
+            await ctx.send(file=discord.File(str(f"{kode}.pdf")))
+        elif get_size <= 7864320:
+            await msg.delete()
+            await ctx.send(file=discord.File(str(f"{kode}.pdf")))
+        else:
+            link = f"https://download.ajipw.my.id/{kode}.pdf"
+            await msg.delete()
+            await ctx.send("File Size " + str(size)+" MB")
+            await ctx.send("Enjoy! " + str(link))
+            
+
 @client.command(pass_context = True)
 async def tes(ctx):
     tier = ctx.guild.premium_tier
