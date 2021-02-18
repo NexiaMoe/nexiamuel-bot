@@ -704,9 +704,10 @@ async def dl(ctx, kode : int):
         await ctx.send(file=discord.File(str(f"../dujin/{kode}.pdf")))
     else:
         link = f"https://download.ajipw.my.id/{kode}.pdf"
-        size = os.path.getsize(f'../dujin/{kode}.pdf')
+        get_size = os.path.getsize(f'../dujin/{kode}.pdf')
+        size = ("%.2f" % get_size/(1024*1024))
         await msg.delete()
-        await ctx.send("File Size " + str(size/(1024*1024))+" MB")
+        await ctx.send("File Size " + str(size)+" MB")
         await ctx.send("Enjoy! " + str(link))
         
 @client.command(pass_context = True)
