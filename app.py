@@ -705,7 +705,7 @@ async def dl(ctx, kode : int):
     elif ctx.guild.premium_tier == 3:
         await msg.delete()
         await ctx.send(file=discord.File(str(f"../dujin/{kode}.pdf")))
-    elif size <= 7.50:
+    elif get_size <= 7864320:
         await msg.delete()
         await ctx.send(file=discord.File(str(f"../dujin/{kode}.pdf")))
     else:
