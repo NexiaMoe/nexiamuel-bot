@@ -122,6 +122,7 @@ async def help(ctx):
     - `popular` : Get Popular today
     - `tag <tags>` : Get doujinshi based of tags, can be multiple tags, example : `tag english milf`
     - `artist <artist>` : Get doujinshi based of artist
+    - `dl <code>` : It will download to pdf
     
     **pixiv**
     - `pixiv <code> / <url>` : Get illustrator from pixiv
@@ -688,6 +689,28 @@ async def artist(ctx, *, tags):
         await message.delete()
     except:
         pass   
+
+@client.command(pass_context = True)
+@commands.is_nsfw()
+async def dl(ctx, kode : int):
+    msg = await ctx.send("Please wait ...")
+    await save_pdf(kode)
+    await msg.edit(content = "Uploading ...")
+    if ctx.guild.premium_tier != [0,1]:
+        await msg.delete()
+        await ctx.send(file=discord.File(str(kode)+'.pdf'))
+    else:
+        link = f"https://download.ajipw.my.id/{kode}.pdf"
+        size = os.path.getsize(f'../dujin/{kode}.pdf')
+        await msg.delete()
+        await ctx.send("File Size " + str(size/(1024*1024))+" MB")
+        await ctx.send("Enjoy! " + str(link))
+        
+@client.command(pass_context = True)
+async def tes(ctx):
+    tier = ctx.guild.premium_tier
+    print(tier)
+    await ctx.send(tier)
 
 # Pixiv Command :
 

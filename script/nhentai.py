@@ -8,6 +8,11 @@ import aiohttp
 import discord
 import random
 import sqlite3
+import re
+import img2pdf
+import multiprocessing as mp
+import concurrent.futures
+import subprocess
 
 db = sqlite3.connect('option/site_crawl.db')
 db.row_factory = sqlite3.Row
@@ -574,3 +579,20 @@ def embed_popular(data, i, total):
     embed.set_footer(text="Doujinshi {} of {}.".format(str(i+1), total))
 
     return embed
+
+async def save_pdf(kode):
+    output = subprocess.Popen(f"python download.py {kode}", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    while output is not None:
+        retcode = output.poll()
+        if retcode is not None:
+            # done
+            
+            return output.communicate()[0].decode()
+            break
+        else:
+            
+            # still running
+            await asyncio.sleep(0.1)
+    
+    return output.terminate()
+        
