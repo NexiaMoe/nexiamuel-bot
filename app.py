@@ -705,7 +705,8 @@ async def dl(ctx, kode : int):
     else:
         link = f"https://download.ajipw.my.id/{kode}.pdf"
         get_size = os.path.getsize(f'../dujin/{kode}.pdf')
-        size = ("%.2f" % get_size/(1024*1024))
+        mb = get_size/(1024*1024)
+        size = f"{mb:.2f}"
         await msg.delete()
         await ctx.send("File Size " + str(size)+" MB")
         await ctx.send("Enjoy! " + str(link))
