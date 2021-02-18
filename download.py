@@ -22,7 +22,7 @@ def content_list(link):
 #     async with session.get("https://nhentai.net/g/"+str(kode)+"/1") as r:
 code = argv[1]
 if __name__ == '__main__':
-    if path.isfile(str(code)+'.pdf') == True:
+    if path.isfile(f'../dujin/{code}.pdf') == True:
         print("File Exist, Send link download...")
         pass
     else:
