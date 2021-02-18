@@ -696,7 +696,10 @@ async def dl(ctx, kode : int):
     msg = await ctx.send("Please wait ...")
     await save_pdf(kode)
     await msg.edit(content = "Uploading ...")
-    if ctx.guild.premium_tier not in [2,3]:
+    if ctx.guild.premium_tier == 2:
+        await msg.delete()
+        await ctx.send(file=discord.File(str(f"../dujin/{kode}.pdf")))
+    elif ctx.guild.premium_tier == 3:
         await msg.delete()
         await ctx.send(file=discord.File(str(f"../dujin/{kode}.pdf")))
     else:
