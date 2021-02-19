@@ -23,7 +23,7 @@ from script.nhentai import *
 db = sqlite3.connect('option/server.db')
 cursor = db.cursor()
 db_name = "settings"
-cursor.execute("CREATE TABLE IF NOT EXISTS "+db_name+" (id INTEGER NOT NULL,server_name	TEXT,category_id	INTEGER,category_name	TEXT,prefix TEXT, PRIMARY KEY(id))")
+cursor.execute("CREATE TABLE IF NOT EXISTS "+db_name+" (id INTEGER NOT NULL,server_name	TEXT,category_id	INTEGER,category_name	TEXT,prefix TEXT,second_prefix TEXT, PRIMARY KEY(id))")
 
 def preffix(message):
     c = cursor.execute("SELECT prefix FROM "+db_name+" WHERE id == ?", (int(message.guild.id),))
@@ -32,17 +32,22 @@ def preffix(message):
 
 def get_prefix(client, message):
     global prefix
-    c = cursor.execute("SELECT prefix FROM "+db_name+" WHERE id == ?", (int(message.guild.id),))
+    c = cursor.execute("SELECT prefix, second_prefix FROM "+db_name+" WHERE id == ?", (int(message.guild.id),))
     data = c.fetchone()
     if data is None:
-        cursor.execute("INSERT INTO "+db_name+" (id, server_name, category_id, category_name, prefix) VALUES(?, ?, ?, ?, ?)", (int(message.guild.id), str(message.guild), int("0"), str(""), str("g/"),))
+        cursor.execute("INSERT or IGNORE INTO "+db_name+" (id, server_name, category_id, category_name, prefix) VALUES(?, ?, ?, ?, ?)", (int(message.guild.id), str(message.guild), int("0"), str(""), str("g/"), str("G/"),))
         db.commit()
-        prefix = "g/"
+        prefix = ["g/", "G/"]
         return prefix
     else:
-        c = cursor.execute("SELECT prefix FROM "+db_name+" WHERE id == ?", (int(message.guild.id),))
-        prefix = ''.join(c.fetchone())
+        c = cursor.execute("SELECT prefix, second_prefix FROM "+db_name+" WHERE id == ?", (int(message.guild.id),))
+        prefix = []
+        for a in c.fetchall():
+            for b in a:
+                prefix.append(b)
         return prefix
+
+
 
 client = commands.Bot(command_prefix=get_prefix)
 
@@ -50,7 +55,7 @@ client.remove_command("help")
 @client.event
 @commands.is_nsfw()
 async def on_guild_join(guild):
-    cursor.execute("INSERT INTO "+db_name+" (id, server_name, category_id, category_name, prefix) VALUES(?, ?, ?, ?, ?)", (int(guild.id), str(guild), int("0"), str(""), str("g/"),))
+    cursor.execute("INSERT or INGORE INTO "+db_name+" (id, server_name, category_id, category_name, prefix, second_prefix) VALUES(?, ?, ?, ?, ?)", (int(guild.id), str(guild), int("0"), str(""), str("g/"), str("G/"),))
     db.commit()
 
 @client.command()
@@ -68,6 +73,22 @@ async def changeprefix(ctx, prefix):
         cursor.execute(query)
         db.commit()
         await ctx.send(f"Prefix has been set to {prefix}")
+
+@client.command()
+@commands.is_nsfw()
+@commands.has_permissions(administrator = True)
+async def changesecprefix(ctx, prefix):
+    c = cursor.execute("SELECT second_prefix FROM "+db_name+" WHERE id == ?", (int(ctx.guild.id),))
+    data = c.fetchone()
+    if data == None:
+        cursor.execute("INSERT or IGNORE INTO "+db_name+" (id, server_name, category_id, category_name, prefix) VALUES(?, ?, ?, ?, ?)", (int(ctx.guild.id), str(ctx.guild), int("0"), str(""), str(preffix), str(prefix)))
+        db.commit()
+        await ctx.send(f"Second Prefix has been set to {prefix}")
+    else:
+        query = f"UPDATE {db_name} SET second_prefix = '{prefix}' WHERE id == {ctx.guild.id}"
+        cursor.execute(query)
+        db.commit()
+        await ctx.send(f"Second Prefix has been set to {prefix}")
 
 @client.command()
 @commands.is_nsfw()
@@ -143,16 +164,32 @@ async def on_ready():
 @commands.is_nsfw()
 async def on_message(ctx):
     try:
-        c = cursor.execute("SELECT prefix FROM "+db_name+" WHERE id == ?", (int(ctx.guild.id),))
-        pre  = ''.join(c.fetchone())
+        c = cursor.execute("SELECT prefix, second_prefix FROM "+db_name+" WHERE id == ?", (int(ctx.guild.id),))
+        pref = []
+        for b in c.fetchall():
+            for d in b:
+                pref.append(d)
+        
+        pre = pref[0]
+        pre1 = pref[1]
         a = ctx.content
-        num = int(a.replace(pre,""))
+        try:
+            num = int(a.replace(pre,""))
+        except:
+            num = int(a.replace(pre1,""))
+        
         
         if ctx.content.startswith(pre + str(num)):
             # print(ctx.content)
             embed = get_code(int(''.join(filter(str.isdigit, ctx.content))))
             await ctx.channel.send("Requested by {}".format(ctx.author.mention))
             await ctx.channel.send(embed=embed)
+        elif ctx.content.startswith(pre1 + str(num)):
+            # print(ctx.content)
+            embed = get_code(int(''.join(filter(str.isdigit, ctx.content))))
+            await ctx.channel.send("Requested by {}".format(ctx.author.mention))
+            await ctx.channel.send(embed=embed)
+            
         
     except Exception as e:
         # print(e)
