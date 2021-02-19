@@ -733,7 +733,6 @@ async def dl(ctx, kode : int):
             await ctx.send("File Size " + str(size)+" MB")
             await ctx.send("Enjoy! " + str(link))
             
-
 @client.command(pass_context = True)
 async def tes(ctx):
     tier = ctx.guild.premium_tier

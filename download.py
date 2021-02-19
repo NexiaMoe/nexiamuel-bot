@@ -6,7 +6,7 @@ import img2pdf
 import multiprocessing as mp
 from os import path
 import os
-
+import io 
 def zu(args):
     linkss = args
     link = ''.join(linkss)
@@ -15,8 +15,14 @@ def zu(args):
 
 def content_list(link):
     content = []
-    print(link)
-    content.append(bytes(req.get(link).content))
+    a = req.get(link)
+    if a.status_code == 404:
+        png = link.replace("jpg","png")
+        print(png)
+        content.append(bytes(req.get(png).content))
+    else :
+        print(link)
+        content.append(bytes(a.content))
     return content
 
 # async with aiohttp.ClientSession() as session:
@@ -55,7 +61,7 @@ if __name__ == '__main__':
                 u = 1
                 pool = mp.Pool(4)
                 content = pool.imap(zu, zip(link))
-                content = [bytes(ent) for sublist in content for ent in sublist]
+                content = [ent for sublist in content for ent in sublist]
                 a4inpt = (img2pdf.mm_to_pt(210),img2pdf.mm_to_pt(297))
                 layout_fun = img2pdf.get_layout_fun(a4inpt)
 
@@ -92,9 +98,9 @@ if __name__ == '__main__':
 
             with open(f"{code}.pdf", 'wb') as f:
                 u = 1
-                pool = mp.Pool(2)
+                pool = mp.Pool(4)
                 content = pool.imap(zu, zip(link))
-                content = [bytes(ent) for sublist in content for ent in sublist]
+                content = [ent for sublist in content for ent in sublist]
                 a4inpt = (img2pdf.mm_to_pt(210),img2pdf.mm_to_pt(297))
                 layout_fun = img2pdf.get_layout_fun(a4inpt)
 
