@@ -98,7 +98,7 @@ async def on_command_error(ctx, error):
         await ctx.send("**You need run this command on NSFW Channel**")
     raise error
 
-@client.command()
+@client.command(aliases=['h'])
 @commands.is_nsfw()
 async def help(ctx):
     embed = discord.Embed(title="Nexiamuel Bot",description=f"""
@@ -143,7 +143,6 @@ async def on_ready():
 @commands.is_nsfw()
 async def on_message(ctx):
     try:
-        
         c = cursor.execute("SELECT prefix FROM "+db_name+" WHERE id == ?", (int(ctx.guild.id),))
         pre  = ''.join(c.fetchone())
         a = ctx.content
@@ -437,7 +436,7 @@ async def close(ctx):
     except:
         await ctx.send("There is error, please tell dev")
 
-@client.command(pass_context = True)
+@client.command(pass_context = True, aliases=['r'])
 @commands.is_nsfw()
 async def random(ctx, tag: str = None):
     if tag is None:
@@ -457,7 +456,6 @@ async def random(ctx, tag: str = None):
             await mmsss.delete()
             await ctx.send("Tag not found, please check again!")
         
-
 @client.command(pass_context = True)
 @commands.is_nsfw()
 async def popular(ctx):
@@ -690,7 +688,7 @@ async def artist(ctx, *, tags):
     except:
         pass   
 
-@client.command(pass_context = True)
+@client.command(pass_context = True, aliases=['download'])
 @commands.is_nsfw()
 async def dl(ctx, kode : int):
     msg = await ctx.send("Please wait ...")
