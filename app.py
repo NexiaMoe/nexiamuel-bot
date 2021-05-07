@@ -470,7 +470,8 @@ async def close(ctx):
                     channel = discord.utils.get(ctx.guild.channels, name=str(channel))
                     await channel.delete()
                     break
-    except:
+    except Exception as e:
+        print(e)
         await ctx.send("There is error, please tell dev")
 
 @client.command(pass_context = True, aliases=['r'])
